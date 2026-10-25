@@ -25,6 +25,7 @@ export class GameController {
     this.misses = 0;
     this.reactionTimes = [];
     this.weakProblems = [];
+    this.roundStartTime = performance.now();
 
     this.currentProblem = null;
     this.problemStartTime = 0;
@@ -75,6 +76,7 @@ export class GameController {
     this.misses = 0;
     this.reactionTimes = [];
     this.weakProblems = [];
+    this.roundStartTime = performance.now();
     if (overrideProblems !== null) {
       this.overridePool = overrideProblems;
     }
@@ -302,7 +304,8 @@ export class GameController {
       maxStreak: this.maxCombo,
       weakProblems: this.weakProblems,
       isDrillWin,
-      initialDrillCount: this.initialDrillCount
+      initialDrillCount: this.initialDrillCount,
+      elapsedSec: this.roundStartTime ? parseFloat(((performance.now() - this.roundStartTime) / 1000).toFixed(1)) : null
     };
 
     const recordResult = this.stats.recordRound(summary);

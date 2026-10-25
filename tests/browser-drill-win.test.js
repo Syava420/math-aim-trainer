@@ -82,7 +82,8 @@ async function testDrillWin() {
 
   // Verify results modal header shows victory
   const rankTitle = await page.$eval('#res-rank-label', el => el.textContent);
-  console.log(`Final Rank Label: "${rankTitle}"`);
+  const timeTaken = await page.$eval('#res-kps', el => el.textContent);
+  console.log(`Final Rank Label: "${rankTitle}", Drill Time: "${timeTaken}"`);
 
   if (!rankTitle.includes('Победа')) {
     throw new Error(`Expected rank title to include "Победа", got "${rankTitle}"`);

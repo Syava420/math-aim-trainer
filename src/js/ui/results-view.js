@@ -56,7 +56,7 @@ export class ResultsView {
 
   show(summary) {
     this.lastSummary = summary;
-    const { score, hits, misses, accuracy, avgReactionMs, maxStreak, isNewHigh, weakProblems, mode, isDrillWin, initialDrillCount } = summary;
+    const { score, hits, misses, accuracy, avgReactionMs, maxStreak, isNewHigh, weakProblems, mode, isDrillWin, initialDrillCount, elapsedSec } = summary;
 
     if (isDrillWin) {
       if (this.rankEl) {
@@ -92,9 +92,16 @@ export class ResultsView {
     if (this.reactionEl) this.reactionEl.textContent = avgReactionMs > 0 ? `${avgReactionMs} мс` : '—';
     if (this.streakEl) this.streakEl.textContent = `${maxStreak}x`;
 
-    const roundSeconds = mode === 'blitz_30' ? 30 : 60;
-    const tpm = Math.round((hits / roundSeconds) * 60);
-    if (this.kpsEl) this.kpsEl.textContent = `${tpm} в мин`;
+    const kpsLabel = this.kpsEl?.previousElementSibling;
+    if (isDrillWin && elapsedSec !== undefined && elapsedSec !== null) {
+      if (kpsLabel) kpsLabel.textContent = 'Время забега';
+      if (this.kpsEl) this.kpsEl.textContent = `${elapsedSec} с`;
+    } else {
+      if (kpsLabel) kpsLabel.textContent = 'Скорость';
+      const roundSeconds = mode === 'blitz_30' ? 30 : 60;
+      const tpm = Math.round((hits / roundSeconds) * 60);
+      if (this.kpsEl) this.kpsEl.textContent = `${tpm} в мин`;
+    }
 
     this.renderWeakSpots(weakProblems);
 
