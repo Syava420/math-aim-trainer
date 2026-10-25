@@ -1,4 +1,4 @@
-/* Arena & Shooting Range — Clean, Modern, Matte (Zero Glow, Zero Cursor Leak) */
+/* Arena & Shooting Range — Clean, Modern, Matte (Hardware Accelerated) */
 #screen-arena {
   position: relative;
   width: 100%;
@@ -11,14 +11,6 @@
   background-size: 44px 44px;
   overflow: hidden;
   contain: strict;
-  will-change: transform;
-}
-
-#arena,
-#arena *,
-.math-target,
-.math-target * {
-  cursor: none !important;
 }
 
 #arena {
@@ -40,6 +32,27 @@
   pointer-events: none;
   z-index: 5;
   transform: translateZ(0);
+}
+
+/* Native OS Hardware Cursors (1000Hz GPU Zero-Lag) */
+#arena.cursor-cross,
+#arena.cursor-cross * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cline x1='12' y1='2' x2='12' y2='8' stroke='%2338bdf8' stroke-width='2' stroke-linecap='square'/%3E%3Cline x1='12' y1='16' x2='12' y2='22' stroke='%2338bdf8' stroke-width='2' stroke-linecap='square'/%3E%3Cline x1='2' y1='12' x2='8' y2='12' stroke='%2338bdf8' stroke-width='2' stroke-linecap='square'/%3E%3Cline x1='16' y1='12' x2='22' y2='12' stroke='%2338bdf8' stroke-width='2' stroke-linecap='square'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%23ffffff'/%3E%3C/svg%3E") 12 12, crosshair !important;
+}
+
+#arena.cursor-dot,
+#arena.cursor-dot * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3.5' fill='%2338bdf8'/%3E%3Ccircle cx='8' cy='8' r='1.5' fill='%23ffffff'/%3E%3C/svg%3E") 8 8, crosshair !important;
+}
+
+#arena.cursor-circle,
+#arena.cursor-circle * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%2338bdf8' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%23ffffff'/%3E%3C/svg%3E") 12 12, crosshair !important;
+}
+
+#arena.cursor-system,
+#arena.cursor-system * {
+  cursor: crosshair !important;
 }
 
 /* Targets — Clean Matte Solid Plates (Zero Glow, Flat Tactical) */
@@ -101,121 +114,33 @@
   50% { transform: translateX(5px); }
 }
 
-/* Custom Crosshairs — Clean & Tactical */
-.custom-crosshair {
+/* Impact Hitmarker (Spawned at Click Point) */
+.impact-hitmarker {
   position: absolute;
-  top: 0;
-  left: 0;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%) scale(1.1);
   pointer-events: none;
   z-index: 100;
-  transform: translate3d(-999px, -999px, 0);
+  animation: hitmarker-fade 0.16s ease-out forwards;
 }
 
-/* Crosshair: Cross */
-.crosshair-cross {
-  width: 24px;
-  height: 24px;
-  margin-left: -12px;
-  margin-top: -12px;
-}
-
-.crosshair-cross .ch-part {
-  position: absolute;
-  background: #38bdf8;
-  border-radius: 1px;
-}
-
-.crosshair-cross .ch-top { width: 2px; height: 7px; top: 0; left: 11px; }
-.crosshair-cross .ch-bottom { width: 2px; height: 7px; bottom: 0; left: 11px; }
-.crosshair-cross .ch-left { width: 7px; height: 2px; left: 0; top: 11px; }
-.crosshair-cross .ch-right { width: 7px; height: 2px; right: 0; top: 11px; }
-.crosshair-cross .ch-center {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  top: 11px;
-  left: 11px;
-  background: #ffffff;
-  border-radius: 50%;
-}
-
-/* Crosshair: Dot */
-.crosshair-dot {
-  width: 8px;
-  height: 8px;
-  margin-left: -4px;
-  margin-top: -4px;
-}
-
-.crosshair-dot .ch-center {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #38bdf8;
-}
-
-.crosshair-dot .ch-part { display: none; }
-
-/* Crosshair: Circle */
-.crosshair-circle {
-  width: 20px;
-  height: 20px;
-  margin-left: -10px;
-  margin-top: -10px;
-  border: 2px solid #38bdf8;
-  border-radius: 50%;
-}
-
-.crosshair-circle .ch-center {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  top: 6px;
-  left: 6px;
-  background: #ffffff;
-  border-radius: 50%;
-}
-
-.crosshair-circle .ch-part { display: none; }
-
-/* Recoil Snap */
-.custom-crosshair.recoil {
-  animation: recoil-snap 0.1s ease-out;
-}
-
-@keyframes recoil-snap {
-  0% { transform: scale(1.3); }
-  100% { transform: scale(1); }
-}
-
-/* Hitmarker */
-.hitmarker {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 24px;
-  height: 24px;
-  transform: translate(-50%, -50%) scale(0.6);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.05s ease;
-}
-
-.hm-svg {
+.impact-hitmarker .hm-svg {
   width: 100%;
   height: 100%;
   stroke-width: 2.5;
 }
 
-.hitmarker.active {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.05);
-}
-
-.hitmarker.hit-success .hm-svg line {
+.impact-hitmarker.hit-success .hm-svg line {
   stroke: #22c55e;
 }
 
-.hitmarker.hit-fail .hm-svg line {
+.impact-hitmarker.hit-fail .hm-svg line {
   stroke: #ef4444;
+}
+
+@keyframes hitmarker-fade {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
 }

@@ -6,8 +6,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(10, 13, 20, 0.85);
-  backdrop-filter: blur(10px);
+  background: rgba(10, 13, 20, 0.94);
   z-index: 500;
   align-items: center;
   justify-content: center;

@@ -145,7 +145,7 @@ export class GameController {
 
     this.sound.playMiss();
     this.crosshair.triggerRecoil();
-    this.crosshair.showHitmarker(false);
+    this.crosshair.showHitmarker(false, arenaX, arenaY);
 
     if (arenaX !== undefined && arenaY !== undefined) {
       this.fx.spawnFloatingText('MISS', arenaX, arenaY, '#f43f5e', false);
@@ -199,7 +199,7 @@ export class GameController {
         this.fx.spawnFloatingText(`+${addedScore}`, x, y, '#4ade80', false);
       }
 
-      this.crosshair.showHitmarker(true);
+      this.crosshair.showHitmarker(true, x, y);
       this.fx.spawnHitSparks(x, y, isUltraFlick ? '#38bdf8' : '#22c55e', 16);
 
       // Progressive Drill Knockout logic
@@ -252,7 +252,7 @@ export class GameController {
       this.stats.recordAnswer(this.currentProblem.a, this.currentProblem.b, false, reactionMs);
 
       this.sound.playMiss();
-      this.crosshair.showHitmarker(false);
+      this.crosshair.showHitmarker(false, x, y);
       this.fx.spawnFloatingText('✕ WRONG', x, y, '#ef4444', true);
       this.fx.spawnHitSparks(x, y, '#ef4444', 12);
 
