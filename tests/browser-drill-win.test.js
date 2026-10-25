@@ -29,7 +29,14 @@ async function testDrillWin() {
     }
   }
 
-  await page.click('#btn-start-training-drill');
+  // Fallback click if modal still visible
+  const isModalVisible = await page.evaluate(() => {
+    const modal = document.getElementById('training-modal');
+    return modal && modal.classList.contains('visible');
+  });
+  if (isModalVisible) {
+    await page.click('#btn-start-training-drill');
+  }
 
   // Wait for countdown to finish
   await page.waitForFunction(() => {

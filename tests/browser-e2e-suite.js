@@ -47,13 +47,19 @@ async function runBrowserTest() {
     const text = await page.evaluate(el => el.textContent, pill);
     if (text.includes('Только на 3')) {
       await pill.click();
-      console.log('Selected "Только на 3".');
+      console.log('Selected "Только на 3" (direct 1-click start).');
       break;
     }
   }
 
-  // Start drill
-  await page.click('#btn-start-training-drill');
+  // Fallback click if modal still visible
+  const isModalVisible = await page.evaluate(() => {
+    const modal = document.getElementById('training-modal');
+    return modal && modal.classList.contains('visible');
+  });
+  if (isModalVisible) {
+    await page.click('#btn-start-training-drill');
+  }
   console.log('Clicked "Начать отстрел на выбывание".');
 
   // Wait for countdown overlay to show and finish

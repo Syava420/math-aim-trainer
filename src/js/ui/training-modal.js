@@ -69,7 +69,8 @@ export class TrainingModal {
 
       btn.addEventListener('click', () => {
         this.selectedChoice = opt.id;
-        this.renderPills();
+        this.hide();
+        this.launchSelectedDrill();
       });
 
       this.pillContainer.appendChild(btn);
