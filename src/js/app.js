@@ -193,7 +193,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Register Service Worker for offline PWA gameplay
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
+    navigator.serviceWorker.register('sw.js').catch((err) => {
       console.warn('Offline Service Worker registration failed:', err);
     });
   }

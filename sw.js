@@ -1,29 +1,30 @@
-const CACHE_NAME = 'math-aim-trainer-v1';
+const CACHE_NAME = 'math-aim-trainer-v2';
+const BASE_PATH = self.location.pathname.replace(/\/sw\.js$/, '') || '';
 
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/favicon.ico',
-  '/src/css/base.css',
-  '/src/css/arena.css',
-  '/src/css/hud.css',
-  '/src/css/modal.css',
-  '/src/css/study.css',
-  '/src/js/app.js',
-  '/src/js/core/math-engine.js',
-  '/src/js/core/particle-fx.js',
-  '/src/js/core/sound-engine.js',
-  '/src/js/core/stats-store.js',
-  '/src/js/game/game-controller.js',
-  '/src/js/game/target-manager.js',
-  '/src/js/ui/crosshair.js',
-  '/src/js/ui/hud-view.js',
-  '/src/js/ui/results-view.js',
-  '/src/js/ui/settings-view.js',
-  '/src/js/ui/study-view.js',
-  '/src/js/ui/training-modal.js',
-  '/src/js/ui/vault-view.js'
+  `${BASE_PATH}/`,
+  `${BASE_PATH}/index.html`,
+  `${BASE_PATH}/manifest.webmanifest`,
+  `${BASE_PATH}/favicon.ico`,
+  `${BASE_PATH}/src/css/base.css`,
+  `${BASE_PATH}/src/css/arena.css`,
+  `${BASE_PATH}/src/css/hud.css`,
+  `${BASE_PATH}/src/css/modal.css`,
+  `${BASE_PATH}/src/css/study.css`,
+  `${BASE_PATH}/src/js/app.js`,
+  `${BASE_PATH}/src/js/core/math-engine.js`,
+  `${BASE_PATH}/src/js/core/particle-fx.js`,
+  `${BASE_PATH}/src/js/core/sound-engine.js`,
+  `${BASE_PATH}/src/js/core/stats-store.js`,
+  `${BASE_PATH}/src/js/game/game-controller.js`,
+  `${BASE_PATH}/src/js/game/target-manager.js`,
+  `${BASE_PATH}/src/js/ui/crosshair.js`,
+  `${BASE_PATH}/src/js/ui/hud-view.js`,
+  `${BASE_PATH}/src/js/ui/results-view.js`,
+  `${BASE_PATH}/src/js/ui/settings-view.js`,
+  `${BASE_PATH}/src/js/ui/study-view.js`,
+  `${BASE_PATH}/src/js/ui/training-modal.js`,
+  `${BASE_PATH}/src/js/ui/vault-view.js`
 ];
 
 self.addEventListener('install', (event) => {
@@ -49,33 +50,43 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
+  // Cache-First for page navigation (works instantly even when offline or when domain is blocked by ISP)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match(`${BASE_PATH}/index.html`, { ignoreSearch: true })
+        .then((cachedIndex) => {
+          if (cachedIndex) return cachedIndex;
+          return caches.match(`${BASE_PATH}/`, { ignoreSearch: true });
+        })
+        .then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          return fetch(event.request);
+        })
+        .catch(() => caches.match(`${BASE_PATH}/index.html`))
+    );
+    return;
+  }
+
+  // Pure Cache-First for static assets (scripts, styles, icons)
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached asset immediately
         return cachedResponse;
       }
 
-      // If not in cache, fetch from network and dynamically cache
       return fetch(event.request).then((networkResponse) => {
         if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
           return networkResponse;
         }
 
-        const responseToCache = networkResponse.clone();
+        const toCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
+          cache.put(event.request, toCache);
         });
 
         return networkResponse;
-      }).catch(() => {
-        // If offline and request is for page navigation, fallback to root index.html
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
       });
     })
   );
