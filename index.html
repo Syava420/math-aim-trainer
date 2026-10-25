@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Aim Trainer — Аим-тренер Таблицы Умножения</title>
+  <link rel="stylesheet" href="src/css/base.css">
+  <link rel="stylesheet" href="src/css/arena.css">
+  <link rel="stylesheet" href="src/css/hud.css">
+  <link rel="stylesheet" href="src/css/modal.css">
+</head>
+<body>
+
+  <!-- Screen 1: Main Menu -->
+  <main id="screen-menu" class="screen active">
+    <div class="menu-card">
+      <div class="brand-badge">⚡ Киберспортивная Математика</div>
+      <h1 class="app-title">MATH <span>AIM</span> TRAINER</h1>
+      <p class="app-subtitle">
+        Тренируй скорость реакции и таблицу умножения как про-игрок в Gridshot. 
+        Наводись, фликай и стреляй по верным ответам!
+      </p>
+
+      <div class="mode-grid">
+        <button class="mode-card featured" data-mode="gridshot_60">
+          <div class="mode-icon">🎯</div>
+          <div class="mode-name">Gridshot 60s</div>
+          <div class="mode-desc">Классический раунд на 1 минуту. Максимум очков, флики и комбо-стрики.</div>
+        </button>
+
+        <button class="mode-card" data-mode="blitz_30">
+          <div class="mode-icon">⚡</div>
+          <div class="mode-name">Блиц 30s</div>
+          <div class="mode-desc">Быстрый спринт высокой интенсивности для проверки чистых рефлексов.</div>
+        </button>
+
+        <button class="mode-card" data-mode="practice">
+          <div class="mode-icon">🧠</div>
+          <div class="mode-name">Свободный тир</div>
+          <div class="mode-desc">Без таймера. Спокойная разминка и автоматическая фиксация ошибок.</div>
+        </button>
+
+        <button class="mode-card" id="btn-menu-weak-spots" style="display: none;">
+          <div class="mode-icon">🔥</div>
+          <div class="mode-name">Тренировка ошибок</div>
+          <div class="mode-desc">Отстрел только тех примеров, где ты спотыкался в прошлых раундах.</div>
+        </button>
+      </div>
+
+      <div class="menu-footer">
+        <div class="stats-snippet">
+          <span>Рекорд (Gridshot):</span>
+          <strong id="menu-highscore">—</strong>
+        </div>
+
+        <div class="menu-actions">
+          <button id="btn-open-settings" class="btn btn-secondary">
+            ⚙️ Настройки
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Screen 2: Shooting Arena -->
+  <section id="screen-arena" class="screen">
+    <!-- Top In-Game HUD -->
+    <header class="hud-header">
+      <div class="hud-group">
+        <div class="hud-badge">
+          <span class="hud-badge-label">Время</span>
+          <span id="hud-timer" class="hud-badge-val">1:00</span>
+        </div>
+        <div class="hud-badge">
+          <span class="hud-badge-label">Очки</span>
+          <span id="hud-score" class="hud-badge-val">0</span>
+        </div>
+      </div>
+
+      <div class="hud-equation-container">
+        <span class="hud-target-label">Порази цель</span>
+        <div id="hud-equation">7 × 8</div>
+      </div>
+
+      <div class="hud-group">
+        <div id="hud-combo"></div>
+        <div class="hud-badge">
+          <span class="hud-badge-label">Точность</span>
+          <span id="hud-accuracy" class="hud-badge-val">100%</span>
+        </div>
+        <button id="btn-quit-game" class="btn-icon" title="Выйти в меню (Esc)">✕</button>
+      </div>
+    </header>
+
+    <!-- Shooting Area -->
+    <div id="arena">
+      <canvas id="fx-canvas"></canvas>
+      <!-- Clickable target discs will be dynamically injected here -->
+    </div>
+
+    <!-- Countdown 3.. 2.. 1.. GO! -->
+    <div id="countdown-overlay">
+      <div id="countdown-text">3</div>
+    </div>
+  </section>
+
+  <!-- Results Modal -->
+  <div id="results-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 class="modal-title">Результаты раунда</h2>
+      </div>
+
+      <div class="results-rank-card">
+        <div id="res-rank" class="res-rank-badge rank-s">S</div>
+        <div class="rank-info">
+          <div class="rank-label">Звание стрелка</div>
+          <div id="res-rank-label">Мастер таблицы</div>
+          <div class="score-display-row">
+            <span id="res-score">4,850</span>
+            <span id="res-highscore-tag">Новый рекорд!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="telemetry-grid">
+        <div class="telemetry-box">
+          <div class="telemetry-box-label">Точность</div>
+          <div id="res-accuracy" class="telemetry-box-val">94%</div>
+        </div>
+        <div class="telemetry-box">
+          <div class="telemetry-box-label">Попадания</div>
+          <div id="res-hits" class="telemetry-box-val">42 / 44</div>
+        </div>
+        <div class="telemetry-box">
+          <div class="telemetry-box-label">Ср. реакция</div>
+          <div id="res-reaction" class="telemetry-box-val">480 мс</div>
+        </div>
+        <div class="telemetry-box">
+          <div class="telemetry-box-label">Скорость</div>
+          <div id="res-kps" class="telemetry-box-val">42 в мин</div>
+        </div>
+        <div class="telemetry-box">
+          <div class="telemetry-box-label">Макс. комбо</div>
+          <div id="res-streak" class="telemetry-box-val">18x</div>
+        </div>
+      </div>
+
+      <div class="weak-spots-card">
+        <div class="weak-spots-header">
+          <span class="weak-spots-title">Анализ слабых мест</span>
+          <button id="btn-train-mistakes" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px; display: none;">
+            Тренировать ошибки
+          </button>
+        </div>
+        <ul id="res-weak-list"></ul>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-return-menu" class="btn btn-secondary">В меню (Esc)</button>
+        <button id="btn-play-again" class="btn btn-primary">Ещё раз (Пробел)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 class="modal-title">Настройки игры</h2>
+        <button id="btn-close-settings" class="btn-icon">✕</button>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span class="setting-name">Прицел (Crosshair)</span>
+          <span class="setting-hint">Форма и стиль курсора в тире</span>
+        </div>
+        <div class="setting-control">
+          <select id="setting-crosshair">
+            <option value="cross">Крестик (FPS Pro)</option>
+            <option value="dot">Точка (Dot)</option>
+            <option value="circle">Круг (Circle)</option>
+            <option value="system">Обычная мышь</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span class="setting-name">Размер мишеней</span>
+          <span class="setting-hint">Сложность прицеливания</span>
+        </div>
+        <div class="setting-control">
+          <select id="setting-target-size">
+            <option value="small">Маленькие (Microshot)</option>
+            <option value="medium" selected>Средние (Стандарт)</option>
+            <option value="large">Большие (Разминка)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span class="setting-name">Громкость звуков</span>
+          <span class="setting-hint">Хитмаркеры, клики и сигналы</span>
+        </div>
+        <div class="setting-control">
+          <input type="range" id="setting-volume" min="0" max="1" step="0.05" value="0.6">
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span class="setting-name">Без звука</span>
+          <span class="setting-hint">Отключить аудиоэффекты</span>
+        </div>
+        <div class="setting-control">
+          <input type="checkbox" id="setting-mute" style="width: 18px; height: 18px;">
+        </div>
+      </div>
+
+      <div class="multipliers-wrapper">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="setting-name">Числа для тренировки</span>
+          <div style="display: flex; gap: 8px;">
+            <button id="preset-all" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Все 2–9</button>
+            <button id="preset-hard" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">Сложные 6–9</button>
+          </div>
+        </div>
+
+        <div id="multiplier-toggles" class="multiplier-tags">
+          <label class="multiplier-tag-label"><input type="checkbox" value="2" checked>× 2</label>
+          <label class="multiplier-tag-label"><input type="checkbox" value="3" checked>× 3</label>
+          <label class="multiplier-tag-label"><input type="checkbox" value="4" checked>× 4</label>
+          <label class="multiplier-tag-label"><input type="checkbox" value="5" checked>× 5</label>
+          <label class="multiplier-tag-label"><input type="checkbox" value="6" checked>× 6</label>
+          <label class="multiplier-tag-label"><input type="checkbox" value="7" checked>× 7</label>
+          <label class="multiplier-tag-label"><input type="checkbox" value="8" checked>× 8</label>
+          <label class="multiplier-tag-label"><input type="checkbox" value="9" checked>× 9</label>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button id="btn-save-settings" class="btn btn-primary" style="width: 100%;">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/js/app.js"></script>
+</body>
+</html>

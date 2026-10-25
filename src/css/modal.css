@@ -1,0 +1,335 @@
+/* Modals: Results & Settings */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 13, 20, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-backdrop.visible {
+  display: flex;
+}
+
+.modal-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  animation: modal-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 28px;
+}
+
+@keyframes modal-enter {
+  0% { opacity: 0; transform: scale(0.94) translateY(12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Results Rank Display */
+.results-rank-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 22px;
+}
+
+.res-rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 74px;
+  height: 74px;
+  border-radius: 16px;
+  font-size: 32px;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.rank-s-plus {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.4);
+}
+
+.rank-s {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.35);
+}
+
+.rank-a {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+}
+
+.rank-b {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+}
+
+.rank-c {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  color: #e2e8f0;
+}
+
+.rank-info {
+  flex: 1;
+}
+
+.rank-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+#res-rank-label {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.score-display-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+#res-score {
+  font-size: 30px;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  color: var(--accent-blue);
+}
+
+#res-highscore-tag {
+  display: none;
+  font-size: 11px;
+  font-weight: 800;
+  background: #f59e0b;
+  color: #000;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Metric Grid */
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.telemetry-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.telemetry-box-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.telemetry-box-val {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: #ffffff;
+}
+
+/* Weak Spots Section */
+.weak-spots-card {
+  background: rgba(244, 63, 94, 0.04);
+  border: 1px solid rgba(244, 63, 94, 0.15);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+
+.weak-spots-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.weak-spots-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fda4af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#res-weak-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weak-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.weak-eq {
+  font-family: var(--font-mono);
+  color: #f1f5f9;
+}
+
+.weak-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.badge-miss {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fca5a5;
+}
+
+.badge-slow {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+}
+
+.weak-empty {
+  font-size: 13px;
+  color: var(--accent-emerald);
+  text-align: center;
+  padding: 8px;
+}
+
+/* Modal Action Rows */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+/* Settings Form Styles */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setting-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.setting-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.setting-control select,
+.setting-control input[type="range"] {
+  background: var(--bg-muted);
+  color: #fff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.multipliers-wrapper {
+  margin-top: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.multiplier-tags {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.multiplier-tag-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.multiplier-tag-label:has(input:checked) {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.multiplier-tag-label input {
+  display: none;
+}

@@ -1,0 +1,210 @@
+/* Arena & Shooting Range */
+#screen-arena {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(circle at center, rgba(30, 41, 59, 0.4) 0%, rgba(10, 13, 20, 0.95) 100%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+  overflow: hidden;
+}
+
+#arena {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: none;
+}
+
+#fx-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Targets */
+.math-target {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #1e293b 0%, #0f172a 100%);
+  border: 2px solid var(--target-border);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25), inset 0 0 12px rgba(56, 189, 248, 0.15);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.08s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+  animation: target-pop-in 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.math-target:hover {
+  transform: scale(1.04);
+  border-color: #38bdf8;
+  box-shadow: 0 0 26px rgba(56, 189, 248, 0.45), inset 0 0 16px rgba(56, 189, 248, 0.25);
+}
+
+.math-target:active {
+  transform: scale(0.96);
+}
+
+.target-val {
+  font-size: 26px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: #ffffff;
+  pointer-events: none;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.math-target.size-small .target-val { font-size: 20px; }
+.math-target.size-large .target-val { font-size: 32px; }
+
+.math-target.error-shake {
+  animation: target-shake 0.3s ease-in-out;
+  border-color: var(--accent-rose) !important;
+  box-shadow: 0 0 24px rgba(244, 63, 94, 0.6) !important;
+}
+
+@keyframes target-pop-in {
+  0% { transform: scale(0.2); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes target-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* Custom Crosshairs */
+.custom-crosshair {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 100;
+  transform: translate3d(-999px, -999px, 0);
+  transition: width 0.08s ease, height 0.08s ease;
+}
+
+/* Crosshair: Cross */
+.crosshair-cross {
+  width: 24px;
+  height: 24px;
+  margin-left: -12px;
+  margin-top: -12px;
+}
+
+.crosshair-cross .ch-part {
+  position: absolute;
+  background: #38bdf8;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+  border-radius: 1px;
+}
+
+.crosshair-cross .ch-top { width: 2px; height: 7px; top: 0; left: 11px; }
+.crosshair-cross .ch-bottom { width: 2px; height: 7px; bottom: 0; left: 11px; }
+.crosshair-cross .ch-left { width: 7px; height: 2px; left: 0; top: 11px; }
+.crosshair-cross .ch-right { width: 7px; height: 2px; right: 0; top: 11px; }
+.crosshair-cross .ch-center {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  top: 11px;
+  left: 11px;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+/* Crosshair: Dot */
+.crosshair-dot {
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+}
+
+.crosshair-dot .ch-center {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.crosshair-dot .ch-part { display: none; }
+
+/* Crosshair: Circle */
+.crosshair-circle {
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  margin-top: -11px;
+  border: 1.5px solid rgba(56, 189, 248, 0.85);
+  border-radius: 50%;
+}
+
+.crosshair-circle .ch-center {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  top: 7px;
+  left: 7px;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.crosshair-circle .ch-part { display: none; }
+
+/* Crosshair Recoil */
+.custom-crosshair.recoil {
+  animation: recoil-snap 0.12s ease-out;
+}
+
+@keyframes recoil-snap {
+  0% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+/* Hitmarker */
+.hitmarker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.05s ease, transform 0.05s ease;
+}
+
+.hm-svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 2.2;
+}
+
+.hitmarker.active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.hitmarker.hit-success .hm-svg line {
+  stroke: #4ade80;
+}
+
+.hitmarker.hit-fail .hm-svg line {
+  stroke: #f43f5e;
+}

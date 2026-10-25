@@ -1,0 +1,14 @@
+{
+  "name": "math-aim-trainer",
+  "version": "1.0.0",
+  "description": "Aim Trainer for the Multiplication Table — fast-paced target shooting math game",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node tests/verify-engine.test.js && node tests/test-scoring.test.js"
+  },
+  "keywords": ["math", "aim-trainer", "gridshot", "game", "multiplication"],
+  "author": "",
+  "license": "MIT"
+}
