@@ -68,7 +68,9 @@ export class GameController {
     this.misses = 0;
     this.reactionTimes = [];
     this.weakProblems = [];
-    this.overridePool = overrideProblems;
+    if (overrideProblems !== null) {
+      this.overridePool = overrideProblems;
+    }
 
     // Set duration based on mode
     if (this.mode === 'blitz_30') {
