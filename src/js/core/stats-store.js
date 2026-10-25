@@ -1,6 +1,6 @@
 /**
- * Stats Store: Handles persistence of high scores, round histories, and weak-spot analytics.
- * Includes a persistent Hard Problems Vault (База сложных примеров).
+ * Stats Store: Handles persistence of high scores, round histories, weak-spot analytics,
+ * and adaptive mastery tracking for every multiplication fact.
  */
 const STORAGE_KEY = 'math_aim_trainer_stats_v1';
 const SETTINGS_KEY = 'math_aim_trainer_settings_v1';
@@ -19,10 +19,11 @@ export class StatsStore {
         highScores: parsed?.highScores || {},
         history: parsed?.history || [],
         problemStats: parsed?.problemStats || {},
-        hardVault: parsed?.hardVault || {} // Key: "7x8" => { a, b, answer, misses, addedAt, manual }
+        hardVault: parsed?.hardVault || {},
+        mastery: parsed?.mastery || {} // key: "min x max" => { score: 0..100, attempts, fastHits }
       };
     } catch {
-      return { highScores: {}, history: [], problemStats: {}, hardVault: {} };
+      return { highScores: {}, history: [], problemStats: {}, hardVault: {}, mastery: {} };
     }
   }
 
@@ -127,6 +128,75 @@ export class StatsStore {
     this.saveData();
   }
 
+  /* --- Adaptive Fact Mastery Tracking --- */
+
+  recordAnswer(a, b, isCorrect, reactionMs) {
+    const key = this.getVaultKey(a, b);
+    if (!this.data.mastery) this.data.mastery = {};
+    const item = this.data.mastery[key] || { score: 0, attempts: 0, fastHits: 0 };
+
+    item.attempts++;
+    if (isCorrect) {
+      if (reactionMs < 550) {
+        item.score = Math.min(100, item.score + 25);
+        item.fastHits = (item.fastHits || 0) + 1;
+      } else if (reactionMs < 950) {
+        item.score = Math.min(100, item.score + 15);
+      } else {
+        item.score = Math.min(100, item.score + 8);
+      }
+
+      // If well-mastered, graduate from hard vault
+      if (item.score >= 80 && item.fastHits >= 2) {
+        this.removeFromVault(a, b);
+      }
+    } else {
+      item.score = Math.max(0, item.score - 35);
+      item.fastHits = 0;
+      this.addToVault(a, b, false, true);
+    }
+
+    this.data.mastery[key] = item;
+    this.saveData();
+  }
+
+  getMastery(a, b) {
+    const key = this.getVaultKey(a, b);
+    const item = this.data.mastery?.[key];
+    if (!item || item.attempts === 0) {
+      return { score: 0, status: 'unseen', attempts: 0, fastHits: 0 };
+    }
+    if (this.isInVault(a, b) || item.score < 40) {
+      return { score: item.score, status: 'weak', attempts: item.attempts, fastHits: item.fastHits };
+    }
+    if (item.score >= 80) {
+      return { score: item.score, status: 'mastered', attempts: item.attempts, fastHits: item.fastHits };
+    }
+    return { score: item.score, status: 'learning', attempts: item.attempts, fastHits: item.fastHits };
+  }
+
+  getTableHeatmapStats() {
+    let total = 0;
+    let masteredCount = 0;
+    let learningCount = 0;
+    let weakCount = 0;
+    let totalScore = 0;
+
+    for (let r = 2; r <= 9; r++) {
+      for (let c = r; c <= 9; c++) {
+        total++;
+        const info = this.getMastery(r, c);
+        totalScore += info.score;
+        if (info.status === 'mastered') masteredCount++;
+        else if (info.status === 'learning') learningCount++;
+        else if (info.status === 'weak') weakCount++;
+      }
+    }
+
+    const overallPercent = Math.round(totalScore / total);
+    return { total, masteredCount, learningCount, weakCount, overallPercent };
+  }
+
   /* --- Round & Stats Recording --- */
 
   recordRound(summary) {
@@ -162,13 +232,11 @@ export class StatsStore {
         stat.attempts++;
         if (item.isMiss) {
           stat.misses++;
-          // Automatically register missed problems into the Hard Vault
           this.addToVault(item.a, item.b, false, true);
         }
         if (item.reactionMs) {
           stat.totalTime += item.reactionMs;
           if (item.reactionMs > 1500) {
-            // Also flag as hard if took more than 1.5s
             this.addToVault(item.a, item.b, false, false);
           }
         }
@@ -181,21 +249,5 @@ export class StatsStore {
 
   getHighScore(mode) {
     return this.data.highScores[mode] || 0;
-  }
-
-  getTopWeakProblems(limit = 6) {
-    const list = Object.values(this.data.problemStats);
-    if (list.length === 0) return [];
-
-    list.sort((x, y) => {
-      const xMissRate = x.misses / Math.max(1, x.attempts);
-      const yMissRate = y.misses / Math.max(1, y.attempts);
-      if (yMissRate !== xMissRate) return yMissRate - xMissRate;
-      const xAvg = x.totalTime / Math.max(1, x.attempts);
-      const yAvg = y.totalTime / Math.max(1, y.attempts);
-      return yAvg - xAvg;
-    });
-
-    return list.slice(0, limit);
   }
 }

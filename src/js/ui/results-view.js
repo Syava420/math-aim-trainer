@@ -110,7 +110,7 @@ export class ResultsView {
     this.lastMistakes = uniqueMistakes;
 
     if (uniqueMistakes.length === 0) {
-      this.weakListEl.innerHTML = '<li class="weak-empty">Идеальный раунд! Ни одной ошибки или заминки 🎯</li>';
+      this.weakListEl.innerHTML = '<li class="weak-empty">Идеальный раунд! Ни одной ошибки или заминки</li>';
       if (this.trainMistakesBtn) this.trainMistakesBtn.style.display = 'none';
       return;
     }

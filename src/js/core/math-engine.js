@@ -1,5 +1,6 @@
 /**
- * Math Engine: Handles problem generation, intelligent distractors, and difficulty filtering.
+ * Math Engine: Handles problem generation, intelligent distractors,
+ * adaptive spaced repetition weights, and difficulty filtering.
  */
 export class MathEngine {
   constructor(options = {}) {
@@ -7,6 +8,11 @@ export class MathEngine {
     this.maxFactor = options.maxFactor || 9;
     this.minFactor = options.minFactor || 2;
     this.recentProblems = [];
+    this.statsStore = options.statsStore || null;
+  }
+
+  setStatsStore(store) {
+    this.statsStore = store;
   }
 
   setAllowedMultipliers(multipliers) {
@@ -17,8 +23,7 @@ export class MathEngine {
 
   /**
    * Generates a problem: a * b = answer, with believable distractors.
-   * @param {number} distractorCount Number of false options to generate (default 2 for 3 targets total)
-   * @param {Array<{a: number, b: number}>} [overrideProblems] Optional pool of specific weak problems
+   * Adaptive: Prioritizes unlearned/weak combinations.
    */
   generateProblem(distractorCount = 2, overrideProblems = null) {
     let a, b;
@@ -28,12 +33,22 @@ export class MathEngine {
       a = chosen.a;
       b = chosen.b;
     } else {
-      let attempts = 0;
-      do {
-        a = this.allowedMultipliers[Math.floor(Math.random() * this.allowedMultipliers.length)];
-        b = Math.floor(Math.random() * (this.maxFactor - this.minFactor + 1)) + this.minFactor;
-        attempts++;
-      } while (this.isRecent(a, b) && attempts < 10);
+      // Adaptive sampling: 45% chance to drill an active weak/vault problem
+      const vaultList = this.statsStore ? this.statsStore.getVaultList() : [];
+      const filteredVault = vaultList.filter(p => this.allowedMultipliers.includes(p.a) || this.allowedMultipliers.includes(p.b));
+
+      if (filteredVault.length > 0 && Math.random() < 0.45) {
+        const chosen = filteredVault[Math.floor(Math.random() * filteredVault.length)];
+        a = chosen.a;
+        b = chosen.b;
+      } else {
+        let attempts = 0;
+        do {
+          a = this.allowedMultipliers[Math.floor(Math.random() * this.allowedMultipliers.length)];
+          b = Math.floor(Math.random() * (this.maxFactor - this.minFactor + 1)) + this.minFactor;
+          attempts++;
+        } while (this.isRecent(a, b) && attempts < 10);
+      }
     }
 
     this.pushRecent(a, b);
@@ -67,21 +82,15 @@ export class MathEngine {
   generateDistractors(a, b, answer, count) {
     const pool = new Set();
 
-    // Strategy 1: Nearby products from the same table (e.g., a * (b +/- 1))
     if (b > 1) pool.add(a * (b - 1));
     pool.add(a * (b + 1));
-
-    // Strategy 2: Nearby products from adjacent table ((a +/- 1) * b)
     if (a > 1) pool.add((a - 1) * b);
     pool.add((a + 1) * b);
-
-    // Strategy 3: Off-by-small values (+/- 2, +/- 4, +/- 10)
     pool.add(answer + 2);
     if (answer > 2) pool.add(answer - 2);
     if (answer > 10) pool.add(answer - 10);
     pool.add(answer + 10);
 
-    // Strategy 4: Common table trap products (e.g., 54 vs 56, 42 vs 48, 63 vs 64)
     const trapPairs = [
       [54, 56], [42, 48], [63, 64], [36, 42], [24, 28], [72, 81], [45, 54]
     ];
@@ -90,15 +99,11 @@ export class MathEngine {
       if (answer === p2) pool.add(p1);
     }
 
-    // Filter out answer, non-positive, and duplicates
     pool.delete(answer);
     const valid = Array.from(pool).filter(n => n > 1 && n <= 144);
-
-    // Pick random unique distractors
     const shuffled = this.shuffle(valid);
     const chosen = shuffled.slice(0, count);
 
-    // Fallback if not enough
     while (chosen.length < count) {
       const fallback = Math.max(2, answer + (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 8) + 1));
       if (fallback !== answer && !chosen.includes(fallback)) {

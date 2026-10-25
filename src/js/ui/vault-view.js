@@ -81,8 +81,10 @@ export class VaultView {
     if (list.length === 0) {
       this.listContainer.innerHTML = `
         <div class="vault-empty-state">
-          <div style="font-size: 32px; margin-bottom: 8px;">🎯</div>
-          <div style="font-weight: 700; color: #fff; margin-bottom: 4px;">База сложных пуста!</div>
+          <div style="margin-bottom: 10px; color: #38bdf8;">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
+          <div style="font-weight: 700; color: #fff; margin-bottom: 4px;">База сложных пуста</div>
           <div style="font-size: 13px; color: #94a3b8; max-width: 320px; margin: 0 auto;">
             Примеры, где ты спотыкаешься в раундах, попадают сюда автоматически. Также можно отметить любой пример через «Урок изучения».
           </div>

@@ -1,6 +1,6 @@
 /**
- * Study View: Interactive Multiplication Matrix & Quick Lesson.
- * Allows quick lookup, factor inspection, and starring to the Hard Vault.
+ * Study View: Interactive Multiplication Matrix & Spaced Repetition Heatmap.
+ * Visualizes table mastery (Green = Mastered, Yellow = Learning, Red = Needs Practice).
  */
 export class StudyView {
   constructor({ statsStore, onPracticeProblem }) {
@@ -12,8 +12,10 @@ export class StudyView {
     this.tableContainer = document.getElementById('study-matrix-container');
     this.filterButtonsContainer = document.getElementById('study-filter-buttons');
     this.detailBox = document.getElementById('study-detail-box');
+    this.progressContainer = document.getElementById('study-progress-container');
 
-    this.activeMultiplier = null; // null for full matrix, or 2..9 for single table focus
+    this.activeMultiplier = null;
+    this.onlyUnlearned = false;
     this.bindEvents();
   }
 
@@ -36,9 +38,31 @@ export class StudyView {
   }
 
   render() {
+    this.renderProgress();
     this.renderFilters();
     this.renderMatrix();
-    this.showDetail(7, 8); // default selection
+    this.showDetail(7, 8);
+  }
+
+  renderProgress() {
+    if (!this.progressContainer) return;
+    const stats = this.stats.getTableHeatmapStats();
+
+    this.progressContainer.innerHTML = `
+      <div class="mastery-bar-wrapper">
+        <div class="mastery-bar-header">
+          <span class="mastery-title">Общий прогресс таблицы умножения: <strong>${stats.overallPercent}%</strong></span>
+          <span class="mastery-counts">
+            <span class="stat-dot dot-green"></span> ${stats.masteredCount} выучено
+            <span class="stat-dot dot-amber"></span> ${stats.learningCount} в процессе
+            <span class="stat-dot dot-rose"></span> ${stats.weakCount} сложных
+          </span>
+        </div>
+        <div class="mastery-progress-track">
+          <div class="mastery-progress-fill" style="width: ${stats.overallPercent}%"></div>
+        </div>
+      </div>
+    `;
   }
 
   renderFilters() {
@@ -46,24 +70,37 @@ export class StudyView {
     this.filterButtonsContainer.innerHTML = '';
 
     const allBtn = document.createElement('button');
-    allBtn.className = `btn btn-secondary ${this.activeMultiplier === null ? 'active' : ''}`;
-    allBtn.style.padding = '6px 12px';
-    allBtn.style.fontSize = '13px';
+    allBtn.className = `btn btn-secondary ${this.activeMultiplier === null && !this.onlyUnlearned ? 'active' : ''}`;
+    allBtn.style.padding = '5px 11px';
+    allBtn.style.fontSize = '12px';
     allBtn.textContent = 'Вся таблица';
     allBtn.addEventListener('click', () => {
       this.activeMultiplier = null;
+      this.onlyUnlearned = false;
       this.render();
     });
     this.filterButtonsContainer.appendChild(allBtn);
 
+    const unlearnedBtn = document.createElement('button');
+    unlearnedBtn.className = `btn btn-secondary ${this.onlyUnlearned ? 'active' : ''}`;
+    unlearnedBtn.style.padding = '5px 11px';
+    unlearnedBtn.style.fontSize = '12px';
+    unlearnedBtn.textContent = 'Только сложные';
+    unlearnedBtn.addEventListener('click', () => {
+      this.onlyUnlearned = !this.onlyUnlearned;
+      this.render();
+    });
+    this.filterButtonsContainer.appendChild(unlearnedBtn);
+
     for (let i = 2; i <= 9; i++) {
       const btn = document.createElement('button');
-      btn.className = `btn btn-secondary ${this.activeMultiplier === i ? 'active' : ''}`;
-      btn.style.padding = '6px 12px';
-      btn.style.fontSize = '13px';
+      btn.className = `btn btn-secondary ${this.activeMultiplier === i && !this.onlyUnlearned ? 'active' : ''}`;
+      btn.style.padding = '5px 10px';
+      btn.style.fontSize = '12px';
       btn.textContent = `× ${i}`;
       btn.addEventListener('click', () => {
         this.activeMultiplier = i;
+        this.onlyUnlearned = false;
         this.render();
       });
       this.filterButtonsContainer.appendChild(btn);
@@ -77,7 +114,6 @@ export class StudyView {
     const table = document.createElement('table');
     table.className = 'study-matrix';
 
-    // Header row
     const thead = document.createElement('thead');
     const headRow = document.createElement('tr');
     headRow.innerHTML = '<th class="matrix-corner">×</th>';
@@ -92,7 +128,6 @@ export class StudyView {
     thead.appendChild(headRow);
     table.appendChild(thead);
 
-    // Rows
     const tbody = document.createElement('tbody');
     const rows = this.activeMultiplier ? [this.activeMultiplier] : range;
 
@@ -106,17 +141,20 @@ export class StudyView {
       range.forEach(c => {
         const td = document.createElement('td');
         const prod = r * c;
-        const isHard = this.stats.isInVault(r, c);
+        const mastery = this.stats.getMastery(r, c);
+        const inVault = this.stats.isInVault(r, c);
 
-        td.className = `matrix-cell ${isHard ? 'is-hard' : ''}`;
-        td.innerHTML = `
-          <span class="cell-prod">${prod}</span>
-          ${isHard ? '<span class="cell-star">★</span>' : ''}
-        `;
-
-        td.addEventListener('click', () => {
-          this.showDetail(r, c);
-        });
+        if (this.onlyUnlearned && mastery.status === 'mastered') {
+          td.className = 'matrix-cell cell-muted';
+          td.innerHTML = `<span class="cell-prod" style="opacity: 0.25;">${prod}</span>`;
+        } else {
+          td.className = `matrix-cell status-${mastery.status} ${inVault ? 'is-vault' : ''}`;
+          td.innerHTML = `
+            <span class="cell-prod">${prod}</span>
+            <span class="cell-status-indicator"></span>
+          `;
+          td.addEventListener('click', () => this.showDetail(r, c));
+        }
 
         tr.appendChild(td);
       });
@@ -130,17 +168,29 @@ export class StudyView {
   showDetail(a, b) {
     if (!this.detailBox) return;
     const ans = a * b;
-    const isHard = this.stats.isInVault(a, b);
+    const inVault = this.stats.isInVault(a, b);
+    const mastery = this.stats.getMastery(a, b);
+
+    let statusText = 'Не встречался';
+    if (mastery.status === 'mastered') statusText = 'Выучено на отлично';
+    else if (mastery.status === 'learning') statusText = 'В процессе запоминания';
+    else if (mastery.status === 'weak') statusText = 'Требует отработки';
 
     this.detailBox.innerHTML = `
       <div class="study-detail-content">
-        <div class="study-detail-eq">
-          <span class="eq-factors">${a} × ${b} =</span>
-          <span class="eq-ans">${ans}</span>
+        <div class="study-detail-left">
+          <div class="study-detail-eq">
+            <span class="eq-factors">${a} × ${b} =</span>
+            <span class="eq-ans">${ans}</span>
+          </div>
+          <div class="study-detail-sub">
+            <span class="badge-status status-${mastery.status}">${statusText} (${mastery.score}%)</span>
+          </div>
         </div>
+
         <div class="study-detail-actions">
-          <button id="btn-toggle-hard-star" class="btn ${isHard ? 'btn-danger' : 'btn-secondary'}" style="padding: 8px 16px; font-size: 13px;">
-            ${isHard ? '★ В базе сложных (Удалить)' : '☆ Добавить в сложные'}
+          <button id="btn-toggle-hard-star" class="btn ${inVault ? 'btn-danger' : 'btn-secondary'}" style="padding: 7px 14px; font-size: 13px;">
+            ${inVault ? 'Удалить из сложных' : '+ В базу сложных'}
           </button>
         </div>
       </div>
@@ -151,7 +201,7 @@ export class StudyView {
       starBtn.addEventListener('click', () => {
         this.stats.toggleVault(a, b);
         this.showDetail(a, b);
-        this.renderMatrix();
+        this.render();
         window.dispatchEvent(new CustomEvent('vault-updated'));
       });
     }

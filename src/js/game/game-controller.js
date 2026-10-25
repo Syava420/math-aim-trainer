@@ -11,6 +11,10 @@ export class GameController {
     this.hud = hudView;
     this.crosshair = crosshair;
 
+    if (this.math && this.stats) {
+      this.math.setStatsStore(this.stats);
+    }
+
     this.state = 'IDLE'; // IDLE, COUNTDOWN, PLAYING, RESULTS
     this.mode = 'gridshot_60';
     this.score = 0;
@@ -108,7 +112,9 @@ export class GameController {
   }
 
   nextProblem() {
-    this.currentProblem = this.math.generateProblem(2, this.overridePool);
+    // Dynamic randomized targets: 1 to 3 distractors => 2, 3, or 4 targets total
+    const distractorCount = Math.floor(Math.random() * 3) + 1;
+    this.currentProblem = this.math.generateProblem(distractorCount, this.overridePool);
     this.problemStartTime = performance.now();
     this.hud.updateEquation(this.currentProblem.equation);
     this.targets.spawnTargets(this.currentProblem.allOptions, this.currentProblem.answer);
@@ -137,6 +143,7 @@ export class GameController {
         isMiss: true,
         reactionMs: null
       });
+      this.stats.recordAnswer(this.currentProblem.a, this.currentProblem.b, false, 2000);
     }
   }
 
@@ -153,6 +160,7 @@ export class GameController {
         this.maxCombo = this.combo;
       }
       this.reactionTimes.push(reactionMs);
+      this.stats.recordAnswer(this.currentProblem.a, this.currentProblem.b, true, reactionMs);
 
       // Score calculation
       const isFastFlick = reactionMs < 400;
@@ -197,6 +205,7 @@ export class GameController {
       this.combo = 0;
       this.hud.updateCombo(0);
       this.hud.updateAccuracy(this.calcAccuracy());
+      this.stats.recordAnswer(this.currentProblem.a, this.currentProblem.b, false, reactionMs);
 
       this.sound.playMiss();
       this.crosshair.showHitmarker(false);

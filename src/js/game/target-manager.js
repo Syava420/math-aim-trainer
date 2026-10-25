@@ -1,13 +1,13 @@
 /**
  * Target Manager: Spawns, positions, and animates clickable targets in the arena.
- * Ensures zero overlap and optimal tactical layout.
+ * Uses adaptive clustering so fewer targets are grouped closer together for satisfying flicks.
  */
 export class TargetManager {
   constructor(arenaElement, onTargetClick) {
     this.arena = arenaElement;
     this.onTargetClick = onTargetClick;
     this.targets = [];
-    this.targetSize = 86; // px diameter
+    this.targetSize = 84;
     this.sizeKey = 'medium';
   }
 
@@ -18,11 +18,11 @@ export class TargetManager {
         this.targetSize = 68;
         break;
       case 'large':
-        this.targetSize = 104;
+        this.targetSize = 102;
         break;
       case 'medium':
       default:
-        this.targetSize = 86;
+        this.targetSize = 84;
         break;
     }
   }
@@ -37,13 +37,13 @@ export class TargetManager {
   }
 
   /**
-   * Spawns targets corresponding to choices for the current problem.
+   * Spawns targets with adaptive clustering.
    * @param {Array<number>} values List of numbers to display on targets
    * @param {number} correctAnswer The single correct answer
    */
   spawnTargets(values, correctAnswer) {
     this.clear();
-    const positions = this.calculateNonOverlappingPositions(values.length);
+    const positions = this.calculateClusteredPositions(values.length);
 
     values.forEach((val, idx) => {
       const pos = positions[idx];
@@ -55,11 +55,7 @@ export class TargetManager {
       el.style.left = `${pos.x}px`;
       el.style.top = `${pos.y}px`;
 
-      el.innerHTML = `
-        <div class="target-glow"></div>
-        <div class="target-ring"></div>
-        <span class="target-val">${val}</span>
-      `;
+      el.innerHTML = `<span class="target-val">${val}</span>`;
 
       el.addEventListener('mousedown', (e) => {
         e.stopPropagation();
@@ -81,81 +77,78 @@ export class TargetManager {
   }
 
   /**
-   * Relocates a target to a fresh position (used in Gridshot continuous flow).
+   * Calculates target positions within a clustered zone.
+   * Fewer targets => tighter spread around a localized focal point.
    */
-  relocateTarget(targetEl, newValue, isCorrect) {
-    const existingPositions = this.targets
-      .filter(t => t.element !== targetEl)
-      .map(t => ({ x: t.x, y: t.y }));
-
-    const pos = this.findFreePosition(existingPositions);
-    targetEl.style.left = `${pos.x}px`;
-    targetEl.style.top = `${pos.y}px`;
-    targetEl.classList.remove('popping', 'error-shake');
-
-    const valSpan = targetEl.querySelector('.target-val');
-    if (valSpan) valSpan.textContent = newValue;
-
-    const targetObj = this.targets.find(t => t.element === targetEl);
-    if (targetObj) {
-      targetObj.x = pos.x;
-      targetObj.y = pos.y;
-      targetObj.value = newValue;
-      targetObj.isCorrect = isCorrect;
-    }
-
-    // Force pop-in animation
-    void targetEl.offsetWidth;
-    targetEl.classList.add('pop-in');
-  }
-
-  calculateNonOverlappingPositions(count) {
-    const positions = [];
-    for (let i = 0; i < count; i++) {
-      positions.push(this.findFreePosition(positions));
-    }
-    return positions;
-  }
-
-  findFreePosition(existingPositions) {
+  calculateClusteredPositions(count) {
     const rect = this.arena.getBoundingClientRect();
-    const pad = 24;
-    const minX = pad;
-    const maxX = Math.max(minX + 20, rect.width - this.targetSize - pad);
-    const minY = pad;
-    const maxY = Math.max(minY + 20, rect.height - this.targetSize - pad);
-    const minDistance = this.targetSize * 1.25;
+    const arenaW = rect.width || 1200;
+    const arenaH = rect.height || 700;
 
-    let bestPos = { x: minX, y: minY };
-    let found = false;
+    // Spread factor scales with target count (2 => 0.38, 3 => 0.52, 4 => 0.65)
+    let spreadScale = 0.38;
+    if (count === 3) spreadScale = 0.52;
+    else if (count >= 4) spreadScale = 0.68;
 
-    for (let attempt = 0; attempt < 60; attempt++) {
-      const candidate = {
-        x: Math.floor(Math.random() * (maxX - minX)) + minX,
-        y: Math.floor(Math.random() * (maxY - minY)) + minY
-      };
+    const clusterW = Math.max(this.targetSize * 2.5, arenaW * spreadScale);
+    const clusterH = Math.max(this.targetSize * 2.5, arenaH * spreadScale);
 
-      const hasOverlap = existingPositions.some(p => {
-        const dx = (candidate.x + this.targetSize / 2) - (p.x + this.targetSize / 2);
-        const dy = (candidate.y + this.targetSize / 2) - (p.y + this.targetSize / 2);
-        return Math.hypot(dx, dy) < minDistance;
-      });
+    // Pick a cluster center point inside safe margin
+    const marginX = this.targetSize + 30;
+    const marginY = this.targetSize + 30;
+    const maxCenterX = arenaW - marginX - clusterW / 2;
+    const minCenterX = marginX + clusterW / 2;
+    const maxCenterY = arenaH - marginY - clusterH / 2;
+    const minCenterY = marginY + clusterH / 2;
 
-      if (!hasOverlap) {
-        bestPos = candidate;
-        found = true;
-        break;
+    const centerX = Math.random() * Math.max(20, maxCenterX - minCenterX) + minCenterX;
+    const centerY = Math.random() * Math.max(20, maxCenterY - minCenterY) + minCenterY;
+
+    // Calculate cluster bounding limits
+    const minX = Math.max(marginX, centerX - clusterW / 2);
+    const maxX = Math.min(arenaW - this.targetSize - marginX, centerX + clusterW / 2 - this.targetSize);
+    const minY = Math.max(marginY, centerY - clusterH / 2);
+    const maxY = Math.min(arenaH - this.targetSize - marginY, centerY + clusterH / 2 - this.targetSize);
+
+    const positions = [];
+    const minDistance = this.targetSize * 1.18;
+
+    for (let i = 0; i < count; i++) {
+      let bestPos = { x: minX, y: minY };
+      let found = false;
+
+      for (let attempt = 0; attempt < 80; attempt++) {
+        const candidate = {
+          x: Math.floor(Math.random() * Math.max(1, maxX - minX)) + minX,
+          y: Math.floor(Math.random() * Math.max(1, maxY - minY)) + minY
+        };
+
+        const hasOverlap = positions.some(p => {
+          const dx = (candidate.x + this.targetSize / 2) - (p.x + this.targetSize / 2);
+          const dy = (candidate.y + this.targetSize / 2) - (p.y + this.targetSize / 2);
+          return Math.hypot(dx, dy) < minDistance;
+        });
+
+        if (!hasOverlap) {
+          bestPos = candidate;
+          found = true;
+          break;
+        }
       }
+
+      if (!found) {
+        // Fallback staggered circular offset around center
+        const angle = (Math.PI * 2 * i) / count;
+        const radius = this.targetSize * 1.15;
+        bestPos = {
+          x: Math.min(maxX, Math.max(minX, centerX + Math.cos(angle) * radius - this.targetSize / 2)),
+          y: Math.min(maxY, Math.max(minY, centerY + Math.sin(angle) * radius - this.targetSize / 2))
+        };
+      }
+
+      positions.push(bestPos);
     }
 
-    if (!found) {
-      // Fallback deterministic offset
-      bestPos = {
-        x: Math.min(maxX, minX + (existingPositions.length * (this.targetSize + 20)) % (maxX - minX + 1)),
-        y: Math.min(maxY, minY + (existingPositions.length * 40) % (maxY - minY + 1))
-      };
-    }
-
-    return bestPos;
+    return positions;
   }
 }

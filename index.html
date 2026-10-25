@@ -15,7 +15,11 @@
   <!-- Screen 1: Main Menu -->
   <main id="screen-menu" class="screen active">
     <div class="menu-card">
-      <div class="brand-badge">⚡ Киберспортивная Математика</div>
+      <div class="brand-badge">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>Киберспортивная Математика</span>
+      </div>
+
       <h1 class="app-title">MATH <span>AIM</span> TRAINER</h1>
       <p class="app-subtitle">
         Тренируй скорость реакции и таблицу умножения как в Gridshot. 
@@ -24,19 +28,25 @@
 
       <div class="mode-grid">
         <button class="mode-card featured" data-mode="gridshot_60">
-          <div class="mode-icon">🎯</div>
+          <div class="mode-icon-box">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
           <div class="mode-name">Gridshot 60s</div>
           <div class="mode-desc">Классический раунд на 1 минуту. Максимум очков, флики и комбо-стрики.</div>
         </button>
 
         <button class="mode-card" data-mode="blitz_30">
-          <div class="mode-icon">⚡</div>
+          <div class="mode-icon-box">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
           <div class="mode-name">Блиц 30s</div>
           <div class="mode-desc">Быстрый спринт высокой интенсивности для проверки чистых рефлексов.</div>
         </button>
 
         <button class="mode-card" data-open-vault>
-          <div class="mode-icon">🔥</div>
+          <div class="mode-icon-box">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></svg>
+          </div>
           <div class="mode-name">
             База сложных
             <span id="vault-count-badge" class="vault-count-pill" style="display: none;">0</span>
@@ -45,9 +55,11 @@
         </button>
 
         <button class="mode-card" data-open-study>
-          <div class="mode-icon">📖</div>
+          <div class="mode-icon-box">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
           <div class="mode-name">Урок изучения</div>
-          <div class="mode-desc">Интерактивная таблица для быстрого повторения и добавления в базу.</div>
+          <div class="mode-desc">Интерактивная карта знаний и таблица для быстрого запоминания.</div>
         </button>
       </div>
 
@@ -59,10 +71,12 @@
 
         <div class="menu-actions">
           <button class="btn btn-secondary" data-mode="practice">
-            🧠 Свободный тир
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"/></svg>
+            <span>Свободный тир</span>
           </button>
           <button id="btn-open-settings" class="btn btn-secondary">
-            ⚙️ Настройки
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Настройки</span>
           </button>
         </div>
       </div>
@@ -170,18 +184,15 @@
     </div>
   </div>
 
-  <!-- Modal: Study Lesson Matrix -->
+  <!-- Modal: Study Lesson Matrix & Heatmap -->
   <div id="study-modal" class="modal-backdrop">
-    <div class="modal-dialog" style="max-width: 620px;">
+    <div class="modal-dialog" style="max-width: 640px;">
       <div class="modal-header">
-        <h2 class="modal-title">Урок изучения таблицы умножения</h2>
+        <h2 class="modal-title">Урок изучения и карта знаний</h2>
         <button id="btn-close-study" class="btn-icon">✕</button>
       </div>
 
-      <p style="font-size: 13px; color: #94a3b8; margin-bottom: 14px;">
-        Нажимай на любую ячейку, чтобы посмотреть пример или добавить его в <strong>Базу сложных (★)</strong>.
-      </p>
-
+      <div id="study-progress-container"></div>
       <div id="study-filter-buttons" class="study-filter-bar"></div>
 
       <div class="study-matrix-wrapper">
@@ -213,7 +224,7 @@
 
       <div class="modal-actions">
         <button id="btn-start-vault-drill" class="btn btn-primary" style="width: 100%;">
-          🎯 Тренировать базу сложных в тире
+          Тренировать базу сложных в тире
         </button>
       </div>
     </div>

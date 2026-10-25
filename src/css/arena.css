@@ -1,4 +1,4 @@
-/* Arena & Shooting Range — Clean, Modern, Matte (No Neon Glow) */
+/* Arena & Shooting Range — Clean, Modern, Matte (Zero Glow, Zero Cursor Leak) */
 #screen-arena {
   position: relative;
   width: 100%;
@@ -6,10 +6,17 @@
   flex-direction: column;
   background-color: #0b0f19;
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 44px 44px;
   overflow: hidden;
+}
+
+#arena,
+#arena *,
+.math-target,
+.math-target * {
+  cursor: none !important;
 }
 
 #arena {
@@ -18,7 +25,6 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  cursor: none;
 }
 
 #fx-canvas {
@@ -31,31 +37,30 @@
   z-index: 5;
 }
 
-/* Targets — Clean Matte Solid Plates */
+/* Targets — Clean Matte Solid Plates (Zero Glow, Flat Tactical) */
 .math-target {
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #151d2e;
+  background: #141b2a;
   border: 2px solid #334155;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   z-index: 10;
-  transition: transform 0.08s ease, border-color 0.1s ease, background 0.1s ease;
-  animation: target-pop-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.08s ease, border-color 0.08s ease, background 0.08s ease;
+  animation: target-pop-in 0.12s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .math-target:hover {
-  transform: scale(1.04);
-  background: #1c273d;
+  transform: scale(1.03);
+  background: #1a2336;
   border-color: #38bdf8;
 }
 
 .math-target:active {
-  transform: scale(0.95);
-  background: #24324d;
+  transform: scale(0.96);
+  background: #202c44;
 }
 
 .target-val {
@@ -71,20 +76,20 @@
 .math-target.size-large .target-val { font-size: 32px; }
 
 .math-target.error-shake {
-  animation: target-shake 0.25s ease-in-out;
+  animation: target-shake 0.22s ease-in-out;
   border-color: #f43f5e !important;
   background: #2b141d !important;
 }
 
 @keyframes target-pop-in {
-  0% { transform: scale(0.3); opacity: 0; }
+  0% { transform: scale(0.4); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
 @keyframes target-shake {
   0%, 100% { transform: translateX(0); }
-  25%, 75% { transform: translateX(-6px); }
-  50% { transform: translateX(6px); }
+  25%, 75% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
 }
 
 /* Custom Crosshairs — Clean & Tactical */
