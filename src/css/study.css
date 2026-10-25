@@ -1,0 +1,188 @@
+/* Study Lesson & Hard Vault Styles */
+
+/* Study Matrix Table */
+.study-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.study-filter-bar .btn.active {
+  background: #38bdf8;
+  color: #031525;
+  font-weight: 700;
+}
+
+.study-matrix-wrapper {
+  overflow-x: auto;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #0d131f;
+}
+
+.study-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.study-matrix th,
+.study-matrix td {
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.matrix-corner {
+  background: #151d2e;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.matrix-header,
+.matrix-row-header {
+  background: #151d2e;
+  color: #94a3b8;
+  font-weight: 700;
+  width: 44px;
+  height: 44px;
+}
+
+.matrix-cell {
+  background: #101726;
+  color: #f1f5f9;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s ease, transform 0.1s ease;
+}
+
+.matrix-cell:hover {
+  background: #1e293b;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.matrix-cell.is-hard {
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+.cell-star {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  font-size: 9px;
+  color: #f43f5e;
+}
+
+/* Detail Box */
+.study-detail-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #151d2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 20px;
+}
+
+.study-detail-eq {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-mono);
+}
+
+.eq-factors {
+  font-size: 24px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.eq-ans {
+  font-size: 32px;
+  font-weight: 900;
+  color: #38bdf8;
+}
+
+/* Vault Items List */
+.vault-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.vault-count-pill {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fda4af;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 6px;
+}
+
+.vault-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 380px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 4px;
+}
+
+.vault-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #151d2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.vault-item-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vault-item-eq {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.vault-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.tag-miss {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fca5a5;
+}
+
+.tag-manual {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+}
+
+.vault-delete-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+}
+
+.vault-empty-state {
+  text-align: center;
+  padding: 36px 16px;
+}

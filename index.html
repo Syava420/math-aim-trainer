@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="src/css/arena.css">
   <link rel="stylesheet" href="src/css/hud.css">
   <link rel="stylesheet" href="src/css/modal.css">
+  <link rel="stylesheet" href="src/css/study.css">
 </head>
 <body>
 
@@ -17,8 +18,8 @@
       <div class="brand-badge">⚡ Киберспортивная Математика</div>
       <h1 class="app-title">MATH <span>AIM</span> TRAINER</h1>
       <p class="app-subtitle">
-        Тренируй скорость реакции и таблицу умножения как про-игрок в Gridshot. 
-        Наводись, фликай и стреляй по верным ответам!
+        Тренируй скорость реакции и таблицу умножения как в Gridshot. 
+        Наводись, фликай и отстреливай верные ответы!
       </p>
 
       <div class="mode-grid">
@@ -34,16 +35,19 @@
           <div class="mode-desc">Быстрый спринт высокой интенсивности для проверки чистых рефлексов.</div>
         </button>
 
-        <button class="mode-card" data-mode="practice">
-          <div class="mode-icon">🧠</div>
-          <div class="mode-name">Свободный тир</div>
-          <div class="mode-desc">Без таймера. Спокойная разминка и автоматическая фиксация ошибок.</div>
+        <button class="mode-card" data-open-vault>
+          <div class="mode-icon">🔥</div>
+          <div class="mode-name">
+            База сложных
+            <span id="vault-count-badge" class="vault-count-pill" style="display: none;">0</span>
+          </div>
+          <div class="mode-desc">Отдельный банк трудных примеров, пополняемый при ошибках.</div>
         </button>
 
-        <button class="mode-card" id="btn-menu-weak-spots" style="display: none;">
-          <div class="mode-icon">🔥</div>
-          <div class="mode-name">Тренировка ошибок</div>
-          <div class="mode-desc">Отстрел только тех примеров, где ты спотыкался в прошлых раундах.</div>
+        <button class="mode-card" data-open-study>
+          <div class="mode-icon">📖</div>
+          <div class="mode-name">Урок изучения</div>
+          <div class="mode-desc">Интерактивная таблица для быстрого повторения и добавления в базу.</div>
         </button>
       </div>
 
@@ -54,6 +58,9 @@
         </div>
 
         <div class="menu-actions">
+          <button class="btn btn-secondary" data-mode="practice">
+            🧠 Свободный тир
+          </button>
           <button id="btn-open-settings" class="btn btn-secondary">
             ⚙️ Настройки
           </button>
@@ -95,7 +102,7 @@
     <!-- Shooting Area -->
     <div id="arena">
       <canvas id="fx-canvas"></canvas>
-      <!-- Clickable target discs will be dynamically injected here -->
+      <!-- Clickable target discs will be injected here -->
     </div>
 
     <!-- Countdown 3.. 2.. 1.. GO! -->
@@ -148,7 +155,7 @@
 
       <div class="weak-spots-card">
         <div class="weak-spots-header">
-          <span class="weak-spots-title">Анализ слабых мест</span>
+          <span class="weak-spots-title">Анализ слабых мест (в базе)</span>
           <button id="btn-train-mistakes" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px; display: none;">
             Тренировать ошибки
           </button>
@@ -159,6 +166,55 @@
       <div class="modal-actions">
         <button id="btn-return-menu" class="btn btn-secondary">В меню (Esc)</button>
         <button id="btn-play-again" class="btn btn-primary">Ещё раз (Пробел)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Study Lesson Matrix -->
+  <div id="study-modal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 620px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Урок изучения таблицы умножения</h2>
+        <button id="btn-close-study" class="btn-icon">✕</button>
+      </div>
+
+      <p style="font-size: 13px; color: #94a3b8; margin-bottom: 14px;">
+        Нажимай на любую ячейку, чтобы посмотреть пример или добавить его в <strong>Базу сложных (★)</strong>.
+      </p>
+
+      <div id="study-filter-buttons" class="study-filter-bar"></div>
+
+      <div class="study-matrix-wrapper">
+        <div id="study-matrix-container"></div>
+      </div>
+
+      <div id="study-detail-box"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Hard Problems Vault -->
+  <div id="vault-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 class="modal-title">База сложных примеров</h2>
+        <button id="btn-close-vault" class="btn-icon">✕</button>
+      </div>
+
+      <div class="vault-header-row">
+        <span style="font-size: 13px; color: #94a3b8;">
+          Примеры, где ты ошибся в тире или добавил вручную
+        </span>
+        <button id="btn-clear-vault" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;">
+          Очистить все
+        </button>
+      </div>
+
+      <div id="vault-items-list" class="vault-list-container"></div>
+
+      <div class="modal-actions">
+        <button id="btn-start-vault-drill" class="btn btn-primary" style="width: 100%;">
+          🎯 Тренировать базу сложных в тире
+        </button>
       </div>
     </div>
   </div>

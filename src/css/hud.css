@@ -1,10 +1,11 @@
-/* In-Game HUD */
+/* In-Game HUD — Clean, Crisp, Minimal */
 .hud-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 28px;
-  background: linear-gradient(180deg, rgba(10, 13, 20, 0.95) 0%, rgba(10, 13, 20, 0) 100%);
+  padding: 14px 24px;
+  background: #0f1626;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 50;
   pointer-events: none;
 }
@@ -12,44 +13,37 @@
 .hud-group {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   pointer-events: auto;
 }
 
 .hud-badge {
   display: flex;
   flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 8px 16px;
-  min-width: 90px;
-  backdrop-filter: blur(8px);
+  background: #151d2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 6px 14px;
+  min-width: 80px;
 }
 
 .hud-badge-label {
   font-size: 11px;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: #64748b;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
 .hud-badge-val {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   font-family: var(--font-mono);
   color: #ffffff;
 }
 
 #hud-timer.timer-warning {
-  color: var(--accent-rose);
-  animation: timer-pulse 0.6s infinite alternate;
-}
-
-@keyframes timer-pulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.08); text-shadow: 0 0 10px rgba(244, 63, 94, 0.8); }
+  color: #f43f5e;
 }
 
 /* Center Equation Display */
@@ -63,46 +57,44 @@
 .hud-target-label {
   font-size: 11px;
   text-transform: uppercase;
-  color: var(--accent-blue);
+  color: #38bdf8;
   letter-spacing: 1px;
   font-weight: 700;
   margin-bottom: 2px;
 }
 
 #hud-equation {
-  font-size: 42px;
+  font-size: 38px;
   font-weight: 900;
   font-family: var(--font-mono);
   color: #ffffff;
-  letter-spacing: 2px;
-  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+  letter-spacing: 1px;
   transition: transform 0.08s ease;
 }
 
 #hud-equation.eq-bump {
-  animation: eq-bump-anim 0.14s ease-out;
+  animation: eq-bump-anim 0.12s ease-out;
 }
 
 @keyframes eq-bump-anim {
-  0% { transform: scale(0.92); opacity: 0.8; }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(0.95); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
 }
 
 /* Combo Streak Badge */
 #hud-combo {
   display: none;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   font-family: var(--font-mono);
-  background: rgba(56, 189, 248, 0.15);
-  color: var(--accent-blue);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  transition: all 0.15s ease;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 #hud-combo.active {
@@ -110,19 +102,12 @@
 }
 
 #hud-combo.on-fire {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
-  animation: fire-pulse 0.4s infinite alternate;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
-@keyframes fire-pulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.06); }
-}
-
-/* Countdown Overlay */
+/* Countdown Overlay — Crisp & Solid */
 #countdown-overlay {
   display: none;
   position: absolute;
@@ -130,8 +115,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(10, 13, 20, 0.75);
-  backdrop-filter: blur(4px);
+  background: rgba(11, 15, 25, 0.88);
   z-index: 200;
   align-items: center;
   justify-content: center;
@@ -143,19 +127,19 @@
 }
 
 #countdown-text {
-  font-size: 110px;
+  font-size: 96px;
   font-weight: 900;
   font-family: var(--font-mono);
   color: #ffffff;
-  text-shadow: 0 0 30px rgba(56, 189, 248, 0.8);
+  letter-spacing: -2px;
 }
 
 #countdown-text.pulse {
-  animation: countdown-zoom 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: countdown-zoom 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes countdown-zoom {
-  0% { transform: scale(0.3); opacity: 0; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.9; }
+  0% { transform: scale(0.6); opacity: 0; }
+  40% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.95; }
 }

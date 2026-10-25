@@ -8,6 +8,8 @@ import { HudView } from './ui/hud-view.js';
 import { CrosshairController } from './ui/crosshair.js';
 import { ResultsView } from './ui/results-view.js';
 import { SettingsView } from './ui/settings-view.js';
+import { StudyView } from './ui/study-view.js';
+import { VaultView } from './ui/vault-view.js';
 
 class App {
   constructor() {
@@ -16,9 +18,9 @@ class App {
     this.arenaEl = document.getElementById('arena');
     this.fxCanvas = document.getElementById('fx-canvas');
 
-    // High score HUD badge on menu
+    // Menu badges
     this.menuHighScoreEl = document.getElementById('menu-highscore');
-    this.menuWeakSpotsBtn = document.getElementById('btn-menu-weak-spots');
+    this.vaultCountBadge = document.getElementById('vault-count-badge');
 
     this.init();
   }
@@ -64,6 +66,7 @@ class App {
     this.game.onGameOverCallback = (summary) => {
       this.results.show(summary);
       this.updateMenuStats();
+      window.dispatchEvent(new CustomEvent('vault-updated'));
     };
 
     // Settings Modal View
@@ -73,6 +76,22 @@ class App {
       crosshairController: this.crosshair,
       targetManager: this.targets,
       mathEngine: this.math
+    });
+
+    // Study Matrix View (Урок изучения)
+    this.studyView = new StudyView({
+      statsStore: this.stats,
+      onPracticeProblem: (a, b) => {
+        this.startMatch('practice', [{ a, b }]);
+      }
+    });
+
+    // Hard Vault View (База сложных)
+    this.vaultView = new VaultView({
+      statsStore: this.stats,
+      onStartVaultDrill: (vaultList) => {
+        this.startMatch('practice', vaultList);
+      }
     });
 
     this.bindArenaEvents();
@@ -124,17 +143,6 @@ class App {
         this.startMatch(mode);
       });
     });
-
-    if (this.menuWeakSpotsBtn) {
-      this.menuWeakSpotsBtn.addEventListener('click', () => {
-        const weak = this.stats.getTopWeakProblems(8);
-        if (weak.length > 0) {
-          this.startMatch('practice', weak);
-        } else {
-          alert('Слабых мест пока нет! Сыграйте раунд, чтобы система выявила сложные примеры.');
-        }
-      });
-    }
   }
 
   updateMenuStats() {
@@ -143,9 +151,10 @@ class App {
       this.menuHighScoreEl.textContent = high > 0 ? Number(high).toLocaleString() : '—';
     }
 
-    const weak = this.stats.getTopWeakProblems(1);
-    if (this.menuWeakSpotsBtn) {
-      this.menuWeakSpotsBtn.style.display = weak.length > 0 ? 'inline-flex' : 'none';
+    const count = this.stats.getVaultCount();
+    if (this.vaultCountBadge) {
+      this.vaultCountBadge.textContent = count;
+      this.vaultCountBadge.style.display = count > 0 ? 'inline-flex' : 'none';
     }
   }
 
@@ -155,13 +164,11 @@ class App {
     this.fx.resize();
 
     this.game.setMode(mode);
-    this.game.startCountdown(() => {
-      // Countdown finished, playing begins
-    });
+    this.game.overridePool = overridePool;
 
-    if (overridePool) {
-      this.game.overridePool = overridePool;
-    }
+    this.game.startCountdown(() => {
+      // Countdown finished
+    });
   }
 
   showMenu() {
