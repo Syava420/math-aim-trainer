@@ -22,6 +22,8 @@ export class SettingsView {
     this.presetAllBtn = document.getElementById('preset-all');
     this.presetHardBtn = document.getElementById('preset-hard');
     this.multiplierContainer = document.getElementById('multiplier-toggles');
+    this.checkUpdateBtn = document.getElementById('btn-check-update');
+    this.updateStatusText = document.getElementById('update-status-text');
 
     this.bindEvents();
     this.applySettingsToApp(this.stats.settings);
@@ -76,6 +78,32 @@ export class SettingsView {
     if (this.presetHardBtn) {
       this.presetHardBtn.addEventListener('click', () => {
         this.setAllCheckboxes([6, 7, 8, 9]);
+      });
+    }
+
+    if (this.checkUpdateBtn) {
+      this.checkUpdateBtn.addEventListener('click', async () => {
+        if (!this.updateStatusText) return;
+        this.updateStatusText.textContent = 'Проверяем связь с сервером...';
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3500);
+          const res = await fetch('sw.js?check=' + Date.now(), { method: 'HEAD', signal: controller.signal, cache: 'no-store' });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg) {
+              await reg.update();
+              this.updateStatusText.textContent = 'Связь есть (VPN активен). Если вышло обновление, появится кнопка.';
+            } else {
+              this.updateStatusText.textContent = 'Установлена актуальная версия.';
+            }
+          } else {
+            this.updateStatusText.textContent = 'Сервер ответил со статусом ' + res.status;
+          }
+        } catch {
+          this.updateStatusText.textContent = 'Сервер недоступен (VPN выкл). Игра работает из памяти.';
+        }
       });
     }
   }

@@ -191,10 +191,69 @@ class App {
 window.addEventListener('DOMContentLoaded', () => {
   new App();
 
-  // Register Service Worker for offline PWA gameplay
+  // Register Service Worker for offline PWA gameplay with background VPN update detector
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch((err) => {
+    let newWorker = null;
+
+    navigator.serviceWorker.register('sw.js').then((registration) => {
+      if (registration.waiting) {
+        showUpdateBanner(registration.waiting);
+      }
+
+      registration.addEventListener('updatefound', () => {
+        newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner(newWorker);
+            }
+          });
+        }
+      });
+    }).catch((err) => {
       console.warn('Offline Service Worker registration failed:', err);
+    });
+
+    const checkForUpdatesSilently = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch('sw.js?t=' + Date.now(), {
+          method: 'HEAD',
+          signal: controller.signal,
+          cache: 'no-store'
+        });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) reg.update();
+        }
+      } catch {
+        // Silently ignore when VPN is off or domain is unreachable
+      }
+    };
+
+    setTimeout(checkForUpdatesSilently, 2500);
+    window.addEventListener('focus', checkForUpdatesSilently);
+    window.addEventListener('online', checkForUpdatesSilently);
+
+    function showUpdateBanner(worker) {
+      const toast = document.getElementById('update-toast');
+      const applyBtn = document.getElementById('btn-apply-update');
+      if (toast && applyBtn) {
+        toast.style.display = 'flex';
+        applyBtn.onclick = () => {
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        };
+      }
+    }
+
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
     });
   }
 });

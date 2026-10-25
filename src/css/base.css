@@ -274,3 +274,34 @@ button {
   display: flex;
   gap: 10px;
 }
+
+/* Floating Update Notification Toast */
+.update-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #111827;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  animation: toast-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.update-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+@keyframes toast-slide-up {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
