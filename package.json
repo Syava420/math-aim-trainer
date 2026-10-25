@@ -6,9 +6,19 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/verify-engine.test.js && node tests/test-scoring.test.js && node tests/test-vault.test.js && node tests/test-drill.test.js"
+    "test": "node tests/verify-engine.test.js && node tests/test-scoring.test.js && node tests/test-vault.test.js && node tests/test-drill.test.js",
+    "test:e2e": "node tests/browser-e2e-suite.js && node tests/browser-drill-win.test.js"
   },
-  "keywords": ["math", "aim-trainer", "gridshot", "game", "multiplication"],
+  "keywords": [
+    "math",
+    "aim-trainer",
+    "gridshot",
+    "game",
+    "multiplication"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "puppeteer-core": "^25.16.0"
+  }
 }

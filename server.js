@@ -21,6 +21,12 @@ const server = http.createServer((req, res) => {
   let reqPath = req.url.split('?')[0];
   if (reqPath === '/') reqPath = '/index.html';
 
+  if (reqPath === '/favicon.ico') {
+    res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' });
+    res.end(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#38bdf8"/></svg>`);
+    return;
+  }
+
   const safePath = path.normalize(path.join(__dirname, reqPath));
   if (!safePath.startsWith(__dirname)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });

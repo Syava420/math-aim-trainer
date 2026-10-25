@@ -114,8 +114,9 @@ class App {
   bindArenaEvents() {
     this.arenaEl.addEventListener('mousedown', (e) => {
       if (e.target === this.arenaEl || e.target === this.fxCanvas) {
-        const x = e.clientX - this.crosshair.rectLeft;
-        const y = e.clientY - this.crosshair.rectTop;
+        const rect = this.arenaEl.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
         this.game.handleMissClick(x, y);
       }
     });
@@ -173,7 +174,6 @@ class App {
     this.screenMenu.classList.remove('active');
     this.screenArena.classList.add('active');
     this.fx.resize();
-    this.crosshair.updateArenaRect();
 
     this.game.setMode(mode);
     this.game.overridePool = overridePool;

@@ -23,6 +23,10 @@ export class CrosshairController {
     this.arena.classList.add(`cursor-${this.style}`);
   }
 
+  updateArenaRect() {
+    // Safe no-op for hardware cursors
+  }
+
   triggerRecoil() {
     // Hardware cursors do not vibrate, recoil is omitted to prevent JS stutter
   }
