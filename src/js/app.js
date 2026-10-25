@@ -10,6 +10,7 @@ import { ResultsView } from './ui/results-view.js';
 import { SettingsView } from './ui/settings-view.js';
 import { StudyView } from './ui/study-view.js';
 import { VaultView } from './ui/vault-view.js';
+import { TrainingModal } from './ui/training-modal.js';
 
 class App {
   constructor() {
@@ -53,10 +54,13 @@ class App {
     // Results Modal View
     this.results = new ResultsView({
       onPlayAgain: () => {
-        this.startMatch(this.game.mode);
+        this.startMatch(this.game.mode, this.game.overridePool);
       },
       onTrainMistakes: (mistakes) => {
-        this.startMatch('practice', mistakes);
+        this.startMatch('drill', mistakes.map(m => ({ a: m.a, b: m.b })));
+      },
+      onStartCompetition: () => {
+        this.startMatch('gridshot_60');
       },
       onReturnMenu: () => {
         this.showMenu();
@@ -82,7 +86,7 @@ class App {
     this.studyView = new StudyView({
       statsStore: this.stats,
       onPracticeProblem: (a, b) => {
-        this.startMatch('practice', [{ a, b }]);
+        this.startMatch('drill', [{ a, b }]);
       }
     });
 
@@ -90,7 +94,15 @@ class App {
     this.vaultView = new VaultView({
       statsStore: this.stats,
       onStartVaultDrill: (vaultList) => {
-        this.startMatch('practice', vaultList);
+        this.startMatch('drill', vaultList.map(item => ({ a: item.a, b: item.b })));
+      }
+    });
+
+    // Progressive Training Selector Modal
+    this.trainingModal = new TrainingModal({
+      statsStore: this.stats,
+      onStartDrill: (pool) => {
+        this.startMatch('drill', pool);
       }
     });
 
@@ -100,17 +112,14 @@ class App {
   }
 
   bindArenaEvents() {
-    // Click on empty arena counts as a miss
     this.arenaEl.addEventListener('mousedown', (e) => {
       if (e.target === this.arenaEl || e.target === this.fxCanvas) {
-        const rect = this.arenaEl.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = e.clientX - this.crosshair.rectLeft;
+        const y = e.clientY - this.crosshair.rectTop;
         this.game.handleMissClick(x, y);
       }
     });
 
-    // Exit arena button
     const quitBtn = document.getElementById('btn-quit-game');
     if (quitBtn) {
       quitBtn.addEventListener('click', () => {
@@ -119,12 +128,15 @@ class App {
       });
     }
 
-    // Spacebar to restart when results are open
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && this.results.modalEl.classList.contains('visible')) {
         e.preventDefault();
         this.results.hide();
-        this.startMatch(this.game.mode);
+        if (this.results.lastSummary?.isDrillWin) {
+          this.startMatch('gridshot_60');
+        } else {
+          this.startMatch(this.game.mode, this.game.overridePool);
+        }
       } else if (e.code === 'Escape') {
         if (this.game.state === 'PLAYING') {
           this.game.stop();
@@ -135,7 +147,6 @@ class App {
   }
 
   bindMenuEvents() {
-    // Mode selection buttons
     const modeButtons = document.querySelectorAll('[data-mode]');
     modeButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -162,6 +173,7 @@ class App {
     this.screenMenu.classList.remove('active');
     this.screenArena.classList.add('active');
     this.fx.resize();
+    this.crosshair.updateArenaRect();
 
     this.game.setMode(mode);
     this.game.overridePool = overridePool;

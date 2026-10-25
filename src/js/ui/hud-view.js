@@ -1,5 +1,5 @@
 /**
- * HUD View: Controls in-game HUD displays (Equation, Timer, Score, Combo, Accuracy).
+ * HUD View: Controls in-game HUD displays (Equation, Timer, Score, Combo, Accuracy, Drill Progress).
  */
 export class HudView {
   constructor() {
@@ -22,6 +22,7 @@ export class HudView {
   }
 
   updateTime(secondsLeft) {
+    this.resetTimerLabel();
     if (!this.timerEl) return;
     if (secondsLeft === Infinity) {
       this.timerEl.textContent = '∞';
@@ -37,6 +38,26 @@ export class HudView {
       this.timerEl.classList.add('timer-warning');
     } else {
       this.timerEl.classList.remove('timer-warning');
+    }
+  }
+
+  updateDrillProgress(remaining, total) {
+    if (!this.timerEl) return;
+    this.timerEl.textContent = `${remaining} / ${total}`;
+    this.timerEl.classList.remove('timer-warning');
+    const badge = this.timerEl.closest('.hud-badge');
+    if (badge) {
+      const label = badge.querySelector('.hud-badge-label');
+      if (label) label.textContent = 'Осталось';
+    }
+  }
+
+  resetTimerLabel() {
+    if (!this.timerEl) return;
+    const badge = this.timerEl.closest('.hud-badge');
+    if (badge) {
+      const label = badge.querySelector('.hud-badge-label');
+      if (label) label.textContent = 'Время';
     }
   }
 

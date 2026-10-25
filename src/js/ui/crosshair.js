@@ -1,5 +1,6 @@
 /**
  * Crosshair Controller: Handles custom mouse reticle, recoil animation, and hitmarker feedback.
+ * Performance-optimized: zero layout thrashing on mousemove.
  */
 export class CrosshairController {
   constructor(arenaElement) {
@@ -8,6 +9,8 @@ export class CrosshairController {
     this.hitmarker = null;
     this.style = 'cross';
     this.active = false;
+    this.rectLeft = 0;
+    this.rectTop = 0;
     this.build();
     this.bindEvents();
   }
@@ -34,15 +37,20 @@ export class CrosshairController {
     this.arena.appendChild(this.element);
   }
 
+  updateArenaRect() {
+    if (!this.arena) return;
+    const rect = this.arena.getBoundingClientRect();
+    this.rectLeft = rect.left;
+    this.rectTop = rect.top;
+  }
+
   bindEvents() {
-    this.arena.addEventListener('mousemove', (e) => {
-      const rect = this.arena.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      this.element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    });
+    this.updateArenaRect();
+    window.addEventListener('resize', () => this.updateArenaRect(), { passive: true });
+    window.addEventListener('scroll', () => this.updateArenaRect(), { passive: true });
 
     this.arena.addEventListener('mouseenter', () => {
+      this.updateArenaRect();
       if (this.style !== 'system') {
         this.element.style.display = 'block';
       }
@@ -51,6 +59,13 @@ export class CrosshairController {
     this.arena.addEventListener('mouseleave', () => {
       this.element.style.display = 'none';
     });
+
+    // Zero getBoundingClientRect during mouse movement
+    this.arena.addEventListener('mousemove', (e) => {
+      const x = e.clientX - this.rectLeft;
+      const y = e.clientY - this.rectTop;
+      this.element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    }, { passive: true });
   }
 
   setStyle(styleName) {
@@ -58,16 +73,13 @@ export class CrosshairController {
     this.element.className = `custom-crosshair crosshair-${this.style}`;
     if (this.style === 'system') {
       this.element.style.display = 'none';
-      this.arena.style.cursor = 'default';
     } else {
       this.element.style.display = 'block';
-      this.arena.style.cursor = 'none';
     }
   }
 
   triggerRecoil() {
     this.element.classList.remove('recoil');
-    // Force reflow
     void this.element.offsetWidth;
     this.element.classList.add('recoil');
   }

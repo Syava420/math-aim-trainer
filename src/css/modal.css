@@ -333,3 +333,49 @@
 .multiplier-tag-label input {
   display: none;
 }
+
+/* Training Knockout Pills */
+.training-pills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.training-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: #151d2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: left;
+}
+
+.training-pill:hover {
+  background: #1c273d;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.training-pill.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: #38bdf8;
+}
+
+.pill-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.training-pill.active .pill-title {
+  color: #38bdf8;
+}
+
+.pill-desc {
+  font-size: 12px;
+  color: #64748b;
+}

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node tests/verify-engine.test.js && node tests/test-scoring.test.js && node tests/test-vault.test.js"
+    "test": "node tests/verify-engine.test.js && node tests/test-scoring.test.js && node tests/test-vault.test.js && node tests/test-drill.test.js"
   },
   "keywords": ["math", "aim-trainer", "gridshot", "game", "multiplication"],
   "author": "",

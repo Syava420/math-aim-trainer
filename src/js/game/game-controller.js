@@ -1,5 +1,6 @@
 /**
- * Game Controller: Core gameplay loop, round timing, scoring, and telemetry.
+ * Game Controller: Core gameplay loop, round timing, scoring, telemetry,
+ * and progressive elimination knockout drill.
  */
 export class GameController {
   constructor({ mathEngine, soundEngine, particleFx, statsStore, targetManager, hudView, crosshair }) {
@@ -15,7 +16,7 @@ export class GameController {
       this.math.setStatsStore(this.stats);
     }
 
-    this.state = 'IDLE'; // IDLE, COUNTDOWN, PLAYING, RESULTS
+    this.state = 'IDLE';
     this.mode = 'gridshot_60';
     this.score = 0;
     this.combo = 0;
@@ -30,6 +31,8 @@ export class GameController {
     this.roundTimeRemaining = 60;
     this.roundTimer = null;
     this.countdownTimer = null;
+    this.drillQueue = [];
+    this.initialDrillCount = 0;
 
     this.onGameOverCallback = null;
   }
@@ -76,19 +79,25 @@ export class GameController {
       this.overridePool = overrideProblems;
     }
 
-    // Set duration based on mode
-    if (this.mode === 'blitz_30') {
+    if (this.mode === 'drill') {
+      this.drillQueue = Array.isArray(this.overridePool) ? [...this.overridePool] : [];
+      this.initialDrillCount = this.drillQueue.length;
+      this.roundTimeRemaining = Infinity;
+      this.hud.updateDrillProgress(this.drillQueue.length, this.initialDrillCount);
+    } else if (this.mode === 'blitz_30') {
       this.roundTimeRemaining = 30;
+      this.hud.updateTime(30);
     } else if (this.mode === 'practice') {
       this.roundTimeRemaining = Infinity;
+      this.hud.updateTime(Infinity);
     } else {
       this.roundTimeRemaining = 60;
+      this.hud.updateTime(60);
     }
 
     this.hud.updateScore(0);
     this.hud.updateCombo(0);
     this.hud.updateAccuracy(100);
-    this.hud.updateTime(this.roundTimeRemaining);
 
     this.fx.start();
     this.nextProblem();
@@ -105,16 +114,22 @@ export class GameController {
         this.hud.updateTime(left);
 
         if (left <= 0) {
-          this.endRound();
+          this.endRound(false);
         }
       }, 250);
     }
   }
 
   nextProblem() {
-    // Dynamic randomized targets: 1 to 3 distractors => 2, 3, or 4 targets total
     const distractorCount = Math.floor(Math.random() * 3) + 1;
-    this.currentProblem = this.math.generateProblem(distractorCount, this.overridePool);
+
+    if (this.mode === 'drill' && this.drillQueue.length > 0) {
+      const target = this.drillQueue[0];
+      this.currentProblem = this.math.generateProblem(distractorCount, [target]);
+    } else {
+      this.currentProblem = this.math.generateProblem(distractorCount, this.overridePool);
+    }
+
     this.problemStartTime = performance.now();
     this.hud.updateEquation(this.currentProblem.equation);
     this.targets.spawnTargets(this.currentProblem.allOptions, this.currentProblem.answer);
@@ -144,6 +159,12 @@ export class GameController {
         reactionMs: null
       });
       this.stats.recordAnswer(this.currentProblem.a, this.currentProblem.b, false, 2000);
+
+      // In drill mode, rotate to end
+      if (this.mode === 'drill' && this.drillQueue.length > 1) {
+        const item = this.drillQueue.shift();
+        this.drillQueue.push(item);
+      }
     }
   }
 
@@ -162,13 +183,11 @@ export class GameController {
       this.reactionTimes.push(reactionMs);
       this.stats.recordAnswer(this.currentProblem.a, this.currentProblem.b, true, reactionMs);
 
-      // Score calculation
       const isFastFlick = reactionMs < 400;
       const isUltraFlick = reactionMs < 280;
       let addedScore = 100 + Math.min(10, this.combo) * 25;
       if (isUltraFlick) addedScore += 100;
       else if (isFastFlick) addedScore += 50;
-
       this.score += addedScore;
 
       // Audio & FX
@@ -181,9 +200,37 @@ export class GameController {
       }
 
       this.crosshair.showHitmarker(true);
-      this.fx.spawnHitSparks(x, y, isUltraFlick ? '#38bdf8' : '#22c55e', 18);
+      this.fx.spawnHitSparks(x, y, isUltraFlick ? '#38bdf8' : '#22c55e', 16);
 
-      // Track if reaction was unusually slow (> 1600ms)
+      // Progressive Drill Knockout logic
+      if (this.mode === 'drill') {
+        if (reactionMs <= 1200) {
+          // Mastered & eliminated from current drill!
+          const idx = this.drillQueue.findIndex(p =>
+            (p.a === this.currentProblem.a && p.b === this.currentProblem.b) ||
+            (p.a === this.currentProblem.b && p.b === this.currentProblem.a)
+          );
+          if (idx !== -1) {
+            this.drillQueue.splice(idx, 1);
+          }
+          this.hud.updateDrillProgress(this.drillQueue.length, this.initialDrillCount);
+          this.fx.spawnFloatingText(`ВЫУЧЕНО! (${this.drillQueue.length} ост.)`, x, y - 20, '#22c55e', true);
+
+          if (this.drillQueue.length === 0) {
+            // Victory: all problems mastered!
+            setTimeout(() => this.endRound(true), 400);
+            return;
+          }
+        } else {
+          // Slow: keep in queue and rotate to back
+          if (this.drillQueue.length > 1) {
+            const item = this.drillQueue.shift();
+            this.drillQueue.push(item);
+          }
+          this.fx.spawnFloatingText('МЕДЛЕННО (ПОВТОРИМ)', x, y - 20, '#f59e0b', false);
+        }
+      }
+
       if (reactionMs > 1600 && this.currentProblem) {
         this.weakProblems.push({
           a: this.currentProblem.a,
@@ -196,11 +243,8 @@ export class GameController {
       this.hud.updateScore(this.score);
       this.hud.updateCombo(this.combo);
       this.hud.updateAccuracy(this.calcAccuracy());
-
-      // Immediate seamless progression
       this.nextProblem();
     } else {
-      // Clicked incorrect target
       this.misses++;
       this.combo = 0;
       this.hud.updateCombo(0);
@@ -222,6 +266,12 @@ export class GameController {
           isMiss: true,
           reactionMs
         });
+
+        // Rotate to back of queue
+        if (this.mode === 'drill' && this.drillQueue.length > 1) {
+          const item = this.drillQueue.shift();
+          this.drillQueue.push(item);
+        }
       }
     }
   }
@@ -232,7 +282,7 @@ export class GameController {
     return Math.round((this.hits / total) * 100);
   }
 
-  endRound() {
+  endRound(isDrillWin = false) {
     this.state = 'RESULTS';
     if (this.roundTimer) clearInterval(this.roundTimer);
     this.targets.clear();
@@ -250,7 +300,9 @@ export class GameController {
       accuracy: this.calcAccuracy(),
       avgReactionMs: avgReaction,
       maxStreak: this.maxCombo,
-      weakProblems: this.weakProblems
+      weakProblems: this.weakProblems,
+      isDrillWin,
+      initialDrillCount: this.initialDrillCount
     };
 
     const recordResult = this.stats.recordRound(summary);

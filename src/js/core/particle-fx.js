@@ -1,6 +1,6 @@
 /**
  * Particle FX Engine: Canvas-based visual juice.
- * Sparks, expanding shockwaves, floating combat text, screen shake.
+ * Performance-optimized: sleeps render loop when there are no active particles.
  */
 export class ParticleFX {
   constructor(canvas) {
@@ -10,9 +10,10 @@ export class ParticleFX {
     this.floatingTexts = [];
     this.shockwaves = [];
     this.running = false;
+    this.animating = false;
     this.resize();
 
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener('resize', () => this.resize(), { passive: true });
   }
 
   resize() {
@@ -23,13 +24,12 @@ export class ParticleFX {
   }
 
   start() {
-    if (this.running) return;
     this.running = true;
-    this.loop();
   }
 
   stop() {
     this.running = false;
+    this.animating = false;
     this.particles = [];
     this.floatingTexts = [];
     this.shockwaves = [];
@@ -38,51 +38,73 @@ export class ParticleFX {
     }
   }
 
-  spawnHitSparks(x, y, color = '#38bdf8', count = 16) {
+  requestLoop() {
+    if (!this.running || this.animating) return;
+    this.animating = true;
+    requestAnimationFrame(() => this.loop());
+  }
+
+  spawnHitSparks(x, y, color = '#38bdf8', count = 14) {
     for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-      const speed = Math.random() * 4.5 + 2.5;
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+      const speed = Math.random() * 4 + 2;
       this.particles.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        size: Math.random() * 3 + 2,
+        size: Math.random() * 2.5 + 1.5,
         alpha: 1,
-        decay: Math.random() * 0.03 + 0.02,
+        decay: Math.random() * 0.04 + 0.03,
         color
       });
     }
 
-    // Expanding shockwave ring
     this.shockwaves.push({
       x,
       y,
-      radius: 12,
-      maxRadius: 55,
-      alpha: 0.8,
+      radius: 10,
+      maxRadius: 48,
+      alpha: 0.75,
       color
     });
+
+    this.requestLoop();
   }
 
   spawnFloatingText(text, x, y, color = '#ffffff', isCrit = false) {
     this.floatingTexts.push({
       text,
-      x: x + (Math.random() - 0.5) * 20,
+      x: x + (Math.random() - 0.5) * 16,
       y: y - 10,
       alpha: 1,
-      vy: -1.8,
-      size: isCrit ? 22 : 16,
+      vy: -1.6,
+      size: isCrit ? 20 : 15,
       weight: isCrit ? 'bold' : '600',
       color
     });
+
+    this.requestLoop();
   }
 
   loop() {
-    if (!this.running) return;
+    if (!this.running) {
+      this.animating = false;
+      return;
+    }
+
     this.update();
     this.render();
-    requestAnimationFrame(() => this.loop());
+
+    const hasActiveFx = this.particles.length > 0 || this.shockwaves.length > 0 || this.floatingTexts.length > 0;
+    if (hasActiveFx) {
+      requestAnimationFrame(() => this.loop());
+    } else {
+      this.animating = false;
+      if (this.ctx && this.canvas) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+    }
   }
 
   update() {
@@ -91,8 +113,8 @@ export class ParticleFX {
       const p = this.particles[i];
       p.x += p.vx;
       p.y += p.vy;
-      p.vx *= 0.94;
-      p.vy *= 0.94;
+      p.vx *= 0.93;
+      p.vy *= 0.93;
       p.alpha -= p.decay;
       if (p.alpha <= 0) {
         this.particles.splice(i, 1);
@@ -102,7 +124,7 @@ export class ParticleFX {
     // Update shockwaves
     for (let i = this.shockwaves.length - 1; i >= 0; i--) {
       const sw = this.shockwaves[i];
-      sw.radius += 2.8;
+      sw.radius += 2.6;
       sw.alpha = 1 - sw.radius / sw.maxRadius;
       if (sw.radius >= sw.maxRadius || sw.alpha <= 0) {
         this.shockwaves.splice(i, 1);
@@ -113,7 +135,7 @@ export class ParticleFX {
     for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
       const ft = this.floatingTexts[i];
       ft.y += ft.vy;
-      ft.alpha -= 0.022;
+      ft.alpha -= 0.025;
       if (ft.alpha <= 0) {
         this.floatingTexts.splice(i, 1);
       }
@@ -131,7 +153,7 @@ export class ParticleFX {
       this.ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
       this.ctx.strokeStyle = sw.color;
       this.ctx.globalAlpha = Math.max(0, sw.alpha);
-      this.ctx.lineWidth = 2.5;
+      this.ctx.lineWidth = 2;
       this.ctx.stroke();
       this.ctx.restore();
     }
@@ -154,8 +176,8 @@ export class ParticleFX {
       this.ctx.fillStyle = ft.color;
       this.ctx.textAlign = 'center';
       this.ctx.globalAlpha = Math.max(0, ft.alpha);
-      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-      this.ctx.shadowBlur = 4;
+      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+      this.ctx.shadowBlur = 3;
       this.ctx.fillText(ft.text, ft.x, ft.y);
       this.ctx.restore();
     }
