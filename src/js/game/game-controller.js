@@ -32,6 +32,8 @@ export class GameController {
     this.roundTimeRemaining = 60;
     this.roundTimer = null;
     this.countdownTimer = null;
+    this.drillStopwatchTimer = null;
+    this.drillId = null;
     this.drillQueue = [];
     this.initialDrillCount = 0;
 
@@ -67,7 +69,7 @@ export class GameController {
     }, 850);
   }
 
-  startRound(overrideProblems = null) {
+  startRound(overrideProblems = null, drillId = null) {
     this.state = 'PLAYING';
     this.score = 0;
     this.combo = 0;
@@ -80,21 +82,40 @@ export class GameController {
     if (overrideProblems !== null) {
       this.overridePool = overrideProblems;
     }
+    if (drillId !== null) {
+      this.drillId = drillId;
+    } else if (this.mode === 'drill' && !this.drillId) {
+      this.drillId = 'drill_all';
+    }
+
+    if (this.drillStopwatchTimer) {
+      clearInterval(this.drillStopwatchTimer);
+      this.drillStopwatchTimer = null;
+    }
 
     if (this.mode === 'drill') {
       this.drillQueue = Array.isArray(this.overridePool) ? [...this.overridePool] : [];
       this.initialDrillCount = this.drillQueue.length;
       this.roundTimeRemaining = Infinity;
       this.hud.updateDrillProgress(this.drillQueue.length, this.initialDrillCount);
-    } else if (this.mode === 'blitz_30') {
-      this.roundTimeRemaining = 30;
-      this.hud.updateTime(30);
-    } else if (this.mode === 'practice') {
-      this.roundTimeRemaining = Infinity;
-      this.hud.updateTime(Infinity);
+      this.hud.updateDrillLiveTimer(0);
+      this.drillStopwatchTimer = setInterval(() => {
+        if (this.state !== 'PLAYING') return;
+        const elapsed = (performance.now() - this.roundStartTime) / 1000;
+        this.hud.updateDrillLiveTimer(elapsed);
+      }, 100);
     } else {
-      this.roundTimeRemaining = 60;
-      this.hud.updateTime(60);
+      this.hud.resetScoreLabel();
+      if (this.mode === 'blitz_30') {
+        this.roundTimeRemaining = 30;
+        this.hud.updateTime(30);
+      } else if (this.mode === 'practice') {
+        this.roundTimeRemaining = Infinity;
+        this.hud.updateTime(Infinity);
+      } else {
+        this.roundTimeRemaining = 60;
+        this.hud.updateTime(60);
+      }
     }
 
     this.hud.updateScore(0);
@@ -287,6 +308,10 @@ export class GameController {
   endRound(isDrillWin = false) {
     this.state = 'RESULTS';
     if (this.roundTimer) clearInterval(this.roundTimer);
+    if (this.drillStopwatchTimer) {
+      clearInterval(this.drillStopwatchTimer);
+      this.drillStopwatchTimer = null;
+    }
     this.targets.clear();
     this.sound.playGameOver();
 
@@ -296,6 +321,7 @@ export class GameController {
 
     const summary = {
       mode: this.mode,
+      drillId: this.drillId || (this.mode === 'drill' ? 'drill_all' : null),
       score: this.score,
       hits: this.hits,
       misses: this.misses,
@@ -311,6 +337,9 @@ export class GameController {
     const recordResult = this.stats.recordRound(summary);
     summary.isNewHigh = recordResult.isNewHigh;
     summary.currentHigh = recordResult.currentHigh;
+    summary.isNewDrillBest = recordResult.isNewDrillBest;
+    summary.prevDrillBest = recordResult.prevDrillBest;
+    summary.currentDrillBest = recordResult.currentDrillBest;
 
     if (this.onGameOverCallback) {
       this.onGameOverCallback(summary);
@@ -320,6 +349,10 @@ export class GameController {
   stop() {
     if (this.roundTimer) clearInterval(this.roundTimer);
     if (this.countdownTimer) clearInterval(this.countdownTimer);
+    if (this.drillStopwatchTimer) {
+      clearInterval(this.drillStopwatchTimer);
+      this.drillStopwatchTimer = null;
+    }
     this.targets.clear();
     this.fx.stop();
     this.state = 'IDLE';

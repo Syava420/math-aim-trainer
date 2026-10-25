@@ -20,10 +20,11 @@ export class StatsStore {
         history: parsed?.history || [],
         problemStats: parsed?.problemStats || {},
         hardVault: parsed?.hardVault || {},
-        mastery: parsed?.mastery || {} // key: "min x max" => { score: 0..100, attempts, fastHits }
+        mastery: parsed?.mastery || {}, // key: "min x max" => { score: 0..100, attempts, fastHits }
+        drillBests: parsed?.drillBests || {} // key: "drill_2", "drill_all" => best seconds
       };
     } catch {
-      return { highScores: {}, history: [], problemStats: {}, hardVault: {}, mastery: {} };
+      return { highScores: {}, history: [], problemStats: {}, hardVault: {}, mastery: {}, drillBests: {} };
     }
   }
 
@@ -243,8 +244,31 @@ export class StatsStore {
       }
     }
 
+    let isNewDrillBest = false;
+    let prevDrillBest = null;
+    const drillKey = summary.drillId || 'drill_all';
+    if (summary.isDrillWin && summary.elapsedSec) {
+      if (!this.data.drillBests) this.data.drillBests = {};
+      prevDrillBest = this.data.drillBests[drillKey] || null;
+      if (!prevDrillBest || summary.elapsedSec < prevDrillBest) {
+        this.data.drillBests[drillKey] = summary.elapsedSec;
+        isNewDrillBest = true;
+      }
+    }
+
     this.saveData();
-    return { isNewHigh, currentHigh: Math.max(currentHigh, score) };
+    return {
+      isNewHigh,
+      currentHigh: Math.max(currentHigh, score),
+      isNewDrillBest,
+      prevDrillBest,
+      currentDrillBest: this.data.drillBests?.[drillKey] || summary.elapsedSec
+    };
+  }
+
+  getDrillBest(drillId) {
+    if (!this.data.drillBests) this.data.drillBests = {};
+    return this.data.drillBests[drillId] || null;
   }
 
   getHighScore(mode) {

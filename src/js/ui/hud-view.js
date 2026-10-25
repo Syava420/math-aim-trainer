@@ -61,6 +61,25 @@ export class HudView {
     }
   }
 
+  updateDrillLiveTimer(elapsedSeconds) {
+    if (!this.scoreEl) return;
+    const badge = this.scoreEl.closest('.hud-badge');
+    if (badge) {
+      const label = badge.querySelector('.hud-badge-label');
+      if (label) label.textContent = 'Таймер';
+    }
+    this.scoreEl.textContent = `${elapsedSeconds.toFixed(1)} с`;
+  }
+
+  resetScoreLabel() {
+    if (!this.scoreEl) return;
+    const badge = this.scoreEl.closest('.hud-badge');
+    if (badge) {
+      const label = badge.querySelector('.hud-badge-label');
+      if (label) label.textContent = 'Очки';
+    }
+  }
+
   updateScore(score) {
     if (this.scoreEl) {
       this.scoreEl.textContent = Number(score).toLocaleString();

@@ -54,10 +54,10 @@ class App {
     // Results Modal View
     this.results = new ResultsView({
       onPlayAgain: () => {
-        this.startMatch(this.game.mode, this.game.overridePool);
+        this.startMatch(this.game.mode, this.game.overridePool, this.game.drillId);
       },
       onTrainMistakes: (mistakes) => {
-        this.startMatch('drill', mistakes.map(m => ({ a: m.a, b: m.b })));
+        this.startMatch('drill', mistakes.map(m => ({ a: m.a, b: m.b })), 'drill_vault');
       },
       onStartCompetition: () => {
         this.startMatch('gridshot_60');
@@ -94,15 +94,15 @@ class App {
     this.vaultView = new VaultView({
       statsStore: this.stats,
       onStartVaultDrill: (vaultList) => {
-        this.startMatch('drill', vaultList.map(item => ({ a: item.a, b: item.b })));
+        this.startMatch('drill', vaultList.map(item => ({ a: item.a, b: item.b })), 'drill_vault');
       }
     });
 
     // Progressive Training Selector Modal
     this.trainingModal = new TrainingModal({
       statsStore: this.stats,
-      onStartDrill: (pool) => {
-        this.startMatch('drill', pool);
+      onStartDrill: (pool, drillId) => {
+        this.startMatch('drill', pool, drillId);
       }
     });
 
@@ -133,11 +133,7 @@ class App {
       if (e.code === 'Space' && this.results.modalEl.classList.contains('visible')) {
         e.preventDefault();
         this.results.hide();
-        if (this.results.lastSummary?.isDrillWin) {
-          this.startMatch('gridshot_60');
-        } else {
-          this.startMatch(this.game.mode, this.game.overridePool);
-        }
+        this.startMatch(this.game.mode, this.game.overridePool, this.game.drillId);
       } else if (e.code === 'Escape') {
         if (this.game.state === 'PLAYING') {
           this.game.stop();
@@ -170,13 +166,14 @@ class App {
     }
   }
 
-  startMatch(mode, overridePool = null) {
+  startMatch(mode, overridePool = null, drillId = null) {
     this.screenMenu.classList.remove('active');
     this.screenArena.classList.add('active');
     this.fx.resize();
 
     this.game.setMode(mode);
     this.game.overridePool = overridePool;
+    this.game.drillId = drillId || (mode === 'drill' ? (this.game.drillId || 'drill_all') : null);
 
     this.game.startCountdown(() => {
       // Countdown finished

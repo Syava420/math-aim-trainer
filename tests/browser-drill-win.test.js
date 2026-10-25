@@ -80,24 +80,26 @@ async function testDrillWin() {
     }
   }
 
-  // Verify results modal header shows victory
+  // Verify results modal header shows drill victory
   const rankTitle = await page.$eval('#res-rank-label', el => el.textContent);
+  const rankBadge = await page.$eval('#res-rank', el => el.textContent);
   const timeTaken = await page.$eval('#res-kps', el => el.textContent);
-  console.log(`Final Rank Label: "${rankTitle}", Drill Time: "${timeTaken}"`);
+  const pbVal = await page.$eval('#res-pb', el => el.textContent);
+  console.log(`Final Rank: "${rankBadge}" (${rankTitle}), Time: "${timeTaken}", PB: "${pbVal}"`);
 
-  if (!rankTitle.includes('Победа')) {
-    throw new Error(`Expected rank title to include "Победа", got "${rankTitle}"`);
+  if (!rankTitle.includes('Все 8 выучены')) {
+    throw new Error(`Expected rank title to include "Все 8 выучены", got "${rankTitle}"`);
   }
 
   console.log('✓ Successfully completed entire knockout drill from 8 down to 0!');
 
-  // Verify "В соревнование (Gridshot)" button works
+  // Verify "Повторить забег (Пробел)" button immediately restarts match
   await page.click('#btn-play-again');
   await page.waitForFunction(() => {
     const cd = document.getElementById('countdown-overlay');
     return cd.classList.contains('visible');
   }, { timeout: 4000 });
-  console.log('✓ "В соревнование" transition verified!');
+  console.log('✓ Instant retry drill verified!');
 
   await browser.close();
   console.log('=== COMPLETE DRILL TEST PASSED PERFECTLY ===');

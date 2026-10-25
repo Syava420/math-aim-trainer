@@ -101,7 +101,10 @@ export class TrainingModal {
     }
 
     if (this.onStartDrill) {
-      this.onStartDrill(pool, this.selectedChoice);
+      const drillId = typeof this.selectedChoice === 'number'
+        ? `drill_${this.selectedChoice}`
+        : (this.selectedChoice === 'vault' ? 'drill_vault' : 'drill_all');
+      this.onStartDrill(pool, drillId);
     }
   }
 }
