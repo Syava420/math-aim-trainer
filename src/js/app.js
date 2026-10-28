@@ -191,8 +191,8 @@ class App {
 window.addEventListener('DOMContentLoaded', () => {
   new App();
 
-  // Register Service Worker for offline PWA gameplay with background VPN update detector
-  if ('serviceWorker' in navigator) {
+  // Register Service Worker for offline PWA gameplay with background VPN update detector (HTTP/HTTPS only)
+  if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
     let newWorker = null;
 
     navigator.serviceWorker.register('sw.js').then((registration) => {
